@@ -73,7 +73,9 @@ void MainWindow::on_startButton_clicked()
         ui->logText->insertPlainText("尝试停止监听\n");
         tcpServer->close();
         qDebug()<<"停止连接";
-        ui->logText->insertPlainText("启动监听\n");
+        ui->startButton->setText("启动监听");
+        ui->logText->insertPlainText("已停止监听\n");
+        return;
     }
     qDebug()<<"启动监听";
     int theport=ui->listeningPort->text().toInt();
