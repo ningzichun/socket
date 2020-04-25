@@ -16,11 +16,16 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    QString getHostIpAddress();
 
 private slots:
     void on_actionGetIP_triggered();
 
     void on_actionAbout_triggered();
+
+    void on_connectButton_clicked();
+
+    void on_startButton_clicked();
 
 private:
     QTcpServer* tcpServer;
