@@ -27,9 +27,13 @@ private slots:
 
     void on_startButton_clicked();
 
+    void on_sendButton_clicked();
+
 private:
     QTcpServer* tcpServer;
     QTcpSocket* tcpSocket;
+    QTcpSocket* acceptedClient;
+    int isListening=0;
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
