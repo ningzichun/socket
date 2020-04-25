@@ -26,6 +26,9 @@
       <height>191</height>
      </rect>
     </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
@@ -202,6 +205,12 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="text">
+      <string>10080</string>
+     </property>
+     <property name="maxLength">
+      <number>5</number>
+     </property>
     </widget>
     <widget class="QLabel" name="label_6">
      <property name="geometry">
@@ -239,7 +248,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>启停</string>
+      <string>启动监听</string>
      </property>
     </widget>
    </widget>
