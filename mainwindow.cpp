@@ -53,6 +53,10 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(tcpSocket,&QTcpSocket::connected,[=](){
         qDebug()<<"连接成功";
+        QString ip=tcpSocket->peerAddress().toString();
+        qint16 port=tcpSocket->peerPort();
+        QString temp=QString("成功连接到 %1:%2 ").arg(ip).arg(port);
+        ui->logText->insertPlainText(temp+"\n");
     });
 
 }
