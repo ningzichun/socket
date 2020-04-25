@@ -17,15 +17,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    dialogabout.cpp \
+    dialogip.cpp \
     main.cpp \
     mainwindow.cpp \
     tcpsocket.cpp
 
 HEADERS += \
+    dialogabout.h \
+    dialogip.h \
     mainwindow.h \
     tcpsocket.h
 
 FORMS += \
+    dialogabout.ui \
+    dialogip.ui \
+    ipaddr.ui \
     mainwindow.ui
 
 # Default rules for deployment.

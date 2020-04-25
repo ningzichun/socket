@@ -17,6 +17,11 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_actionGetIP_triggered();
+
+    void on_actionAbout_triggered();
+
 private:
     QTcpServer* tcpServer;
     QTcpSocket* tcpSocket;

@@ -1,11 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include"dialogip.h"
+#include"dialogabout.h"
 #include <QtNetwork>
 #include<QPushButton>
 #include<QDebug>
 #include<QString>
 #include<QVector>
 #include<QMessageBox>
+#include<QAction>
 
 QString getHostIpAddress()
 {
@@ -74,3 +77,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+void MainWindow::on_actionGetIP_triggered()
+{
+    DialogIP *IPaddr=new DialogIP(this);
+    IPaddr->show();
+    IPaddr->setAttribute(Qt::WA_DeleteOnClose);
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    DialogAbout *aboutWindow=new DialogAbout(this);
+    aboutWindow->show();
+    aboutWindow->setAttribute(Qt::WA_DeleteOnClose);
+}
