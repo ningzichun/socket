@@ -1,4 +1,4 @@
-- name: Install Qt
+ name: Install Qt
   uses: jurplel/install-qt-action@v2.6.2
   with:
     # Directory to install Qt
