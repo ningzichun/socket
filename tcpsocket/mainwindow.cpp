@@ -17,8 +17,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // https://www.bilibili.com/video/BV1yt411d7E4?p=57
     //先测试单线程发文本
     setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
-    setWindowIcon(QIcon("./zhuzi.png"));
     setFixedSize(this->width(), this->height());  // 禁止拖动窗口大小
+    this->setWindowTitle("点到点通信");
     tcpServer = NULL;
     tcpSocket = NULL;
     acceptedClient = NULL;
