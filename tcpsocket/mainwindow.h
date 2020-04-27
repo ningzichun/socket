@@ -2,23 +2,24 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include<QTcpServer>
-#include<QTcpSocket>
+#include <QTcpServer>
+#include <QTcpSocket>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+}
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
-    MainWindow(QWidget *parent = nullptr);
+   public:
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
     QString getHostIpAddress();
 
-private slots:
+   private slots:
     void on_actionGetIP_triggered();
 
     void on_actionAbout_triggered();
@@ -29,11 +30,11 @@ private slots:
 
     void on_sendButton_clicked();
 
-private:
+   private:
     QTcpServer* tcpServer;
     QTcpSocket* tcpSocket;
     QTcpSocket* acceptedClient;
-    int isListening=0;
-    Ui::MainWindow *ui;
+    int isListening = 0;
+    Ui::MainWindow* ui;
 };
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H

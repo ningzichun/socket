@@ -7,19 +7,18 @@ namespace Ui {
 class DialogIP;
 }
 
-class DialogIP : public QDialog
-{
+class DialogIP : public QDialog {
     Q_OBJECT
 
-public:
+   public:
     explicit DialogIP(QWidget *parent = nullptr);
     ~DialogIP();
 
-private slots:
+   private slots:
     void on_exitButton_clicked();
 
-private:
+   private:
     Ui::DialogIP *ui;
 };
 
-#endif // DIALOGIP_H
+#endif  // DIALOGIP_H
