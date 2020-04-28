@@ -242,7 +242,7 @@ QString MainWindow::getHostIpAddress() {
 void MainWindow::on_fileButton_clicked()
 {
     QString path=QFileDialog::getOpenFileName(this,"打开文件");
-    ui->selectedFile->setText(path);
+    ui->selectedFile->setText("选择的文件为："+path);
     QFileInfo fileinfo= QFileInfo(path);
     QString filename=fileinfo.fileName();
 
