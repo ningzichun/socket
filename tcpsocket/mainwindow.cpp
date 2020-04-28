@@ -7,6 +7,7 @@
 #include <QString>
 #include <QVector>
 #include <QtNetwork>
+#include<QFileDialog>
 
 #include "dialogabout.h"
 #include "dialogip.h"
@@ -154,4 +155,33 @@ QString MainWindow::getHostIpAddress() {
     // 如果没有找到，则以本地IP地址为IP
     if (strIpAddress.isEmpty()) strIpAddress = QHostAddress(QHostAddress::LocalHost).toString();
     return strIpAddress;
+}
+
+void MainWindow::on_fileButton_clicked()
+{
+    QString path=QFileDialog::getOpenFileName(this,"打开文件");
+    ui->selectedFile->setText(path);
+    QFileInfo fileinfo= QFileInfo(path);
+    QString filename=fileinfo.fileName();
+
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+    QByteArray array="FILE/"+filename.toUtf8()+"/";
+    array+=file.readAll();
+    //ui->logText->append(array);
+    if (acceptedClient != NULL) {
+        if (acceptedClient->isValid()) {
+            QString ip = acceptedClient->peerAddress().toString();
+            QString temp = QString("正在发送文件到 %1 ").arg(ip);
+            acceptedClient->write(array);
+            ui->logText->insertPlainText(temp + "\n");
+        }
+    }
+    if (tcpSocket->isValid()) {
+        QString ip = tcpSocket->peerAddress().toString();
+        QString temp = QString("正在发送文件到 %1 ").arg(ip);
+        tcpSocket->write(array);
+        ui->logText->insertPlainText(temp + "\n");
+    }
+    file.close();
 }

@@ -135,7 +135,7 @@
       <x>20</x>
       <y>30</y>
       <width>411</width>
-      <height>29</height>
+      <height>34</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -316,6 +316,19 @@
      <string>启动监听</string>
     </property>
    </widget>
+   <widget class="QLabel" name="selectedFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>460</y>
+      <width>671</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>选择的文件</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -323,7 +336,7 @@
      <x>0</x>
      <y>0</y>
      <width>750</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

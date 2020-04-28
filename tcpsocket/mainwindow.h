@@ -30,7 +30,9 @@ class MainWindow : public QMainWindow {
 
     void on_sendButton_clicked();
 
-   private:
+    void on_fileButton_clicked();
+
+private:
     QTcpServer* tcpServer;
     QTcpSocket* tcpSocket;
     QTcpSocket* acceptedClient;
