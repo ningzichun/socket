@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     tcpServer = NULL;
     tcpSocket = NULL;
     acceptedClient = NULL;
+    downloadFolder="";
     QVector<QTcpSocket *> currentSockets;
 
     ui->myIP->setText(getHostIpAddress());
@@ -43,6 +44,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
             ui->logText->append(temp);
             QByteArray array = acceptedClient->readAll();
+            if(array[0]=='F'&&array[1]=='I'&&array[2]=='L'&&array[3]=='E'&&array[4]=='/'){
+                int current=5;
+                QByteArray filename;
+                while(array[current]!='/'){
+                    filename+=array[current];
+                }
+                QString savelocation=downloadFolder+filename;
+                QFile file(savelocation);
+                file.open(QIODevice::Append);
+
+            }
             ui->logText->append(array);
         });
     });
@@ -166,7 +178,7 @@ void MainWindow::on_fileButton_clicked()
 
     QFile file(path);
     file.open(QIODevice::ReadOnly);
-    QByteArray array="FILE/"+filename.toUtf8()+"/";
+    QByteArray array="FILE/"+filename.toUtf8()+"/"; //打上标记区分文字和文件
     array+=file.readAll();
     //ui->logText->append(array);
     if (acceptedClient != NULL) {

@@ -37,6 +37,7 @@ private:
     QTcpSocket* tcpSocket;
     QTcpSocket* acceptedClient;
     int isListening = 0;
+    QString downloadFolder;
     Ui::MainWindow* ui;
 };
 #endif  // MAINWINDOW_H
