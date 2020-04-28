@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             QString ip = acceptedClient->peerAddress().toString();
             qint16 port = acceptedClient->peerPort();
             QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
+            ui->logText->moveCursor(QTextCursor::End);
             ui->logText->append(temp);
             QByteArray array = acceptedClient->readAll();
             if(array.size()>5){
@@ -79,6 +80,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 }
             }
             ui->logText->append(array+"\n");
+            ui->logText->moveCursor(QTextCursor::End);
 
         });
     });
@@ -87,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QString ip = tcpSocket->peerAddress().toString();
         qint16 port = tcpSocket->peerPort();
         QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
+        ui->logText->moveCursor(QTextCursor::End);
         ui->logText->append(temp);
         QByteArray array = tcpSocket->readAll();
         if(array.size()>5){
@@ -123,12 +126,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         }
         ui->logText->append(array+"\n");
+        ui->logText->moveCursor(QTextCursor::End);
     });
     connect(tcpSocket, &QTcpSocket::connected, [=]() {
         qDebug() << "连接成功";
         QString ip = tcpSocket->peerAddress().toString();
         qint16 port = tcpSocket->peerPort();
         QString temp = QString("成功连接到 %1:%2 ").arg(ip).arg(port);
+        ui->logText->moveCursor(QTextCursor::End);
         ui->logText->insertPlainText(temp + "\n");
     });
 
@@ -142,10 +147,12 @@ void MainWindow::on_startButton_clicked() {
         tcpServer->close();
         qDebug() << "停止连接";
         ui->startButton->setText("启动监听");
+        ui->logText->moveCursor(QTextCursor::End);
         ui->logText->insertPlainText("已停止监听\n");
         return;
     }
     qDebug() << "启动监听";
+    ui->logText->moveCursor(QTextCursor::End);
     int theport = ui->listeningPort->text().toInt();
     if (theport >= 65535 || theport < 1) {
         QMessageBox::information(NULL, "提示", "端口号错误，建议端口号 1024-65535 ");
@@ -170,6 +177,7 @@ void MainWindow::on_connectButton_clicked() {
         QMessageBox::information(NULL, "提示", "端口号错误，建议端口号 1024-65535 ");
         return;
     }
+    ui->logText->moveCursor(QTextCursor::End);
 
     if (tcpSocket->state()>=3) {
         qDebug() << "断开连接";
@@ -196,6 +204,7 @@ void MainWindow::on_connectButton_clicked() {
 void MainWindow::on_sendButton_clicked() {
     QString toSend = ui->inputText->toHtml();
     ui->selectedFile->setText("发送成功！");
+    ui->logText->moveCursor(QTextCursor::End);
     if (acceptedClient != NULL) {
         if (acceptedClient->isValid()) {
             QString ip = acceptedClient->peerAddress().toString();
@@ -252,6 +261,7 @@ void MainWindow::on_fileButton_clicked()
     QByteArray array="FILE/"+filename.toUtf8()+"/"; //打上标记区分文字和文件
     array+=file.readAll();
     //ui->logText->append(array);
+    ui->logText->moveCursor(QTextCursor::End);
     if (acceptedClient != NULL) {
         if (acceptedClient->isValid()) {
             QString ip = acceptedClient->peerAddress().toString();
@@ -267,6 +277,7 @@ void MainWindow::on_fileButton_clicked()
         ui->logText->insertPlainText(temp + "\n");
     }
     file.close();
+    ui->logText->moveCursor(QTextCursor::End);
 }
 
 void MainWindow::on_actionsettings_triggered()
