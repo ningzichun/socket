@@ -195,6 +195,7 @@ void MainWindow::on_connectButton_clicked() {
 
 void MainWindow::on_sendButton_clicked() {
     QString toSend = ui->inputText->toHtml();
+    ui->selectedFile->setText("发送成功！");
     if (acceptedClient != NULL) {
         if (acceptedClient->isValid()) {
             QString ip = acceptedClient->peerAddress().toString();
