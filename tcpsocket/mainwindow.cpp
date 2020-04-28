@@ -11,6 +11,7 @@
 
 #include "dialogabout.h"
 #include "dialogip.h"
+#include "dialogsettings.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -44,18 +45,41 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
             ui->logText->append(temp);
             QByteArray array = acceptedClient->readAll();
-            if(array[0]=='F'&&array[1]=='I'&&array[2]=='L'&&array[3]=='E'&&array[4]=='/'){
-                int current=5;
-                QByteArray filename;
-                while(array[current]!='/'){
-                    filename+=array[current];
-                }
-                QString savelocation=downloadFolder+filename;
-                QFile file(savelocation);
-                file.open(QIODevice::Append);
+            if(array.size()>5){
+                if(array[0]=='F'&&array[1]=='I'&&array[2]=='L'&&array[3]=='E'&&array[4]=='/'){
+                    int current=5;
+                    QByteArray filename;
+                    while(array[current]!='/'){
+                        filename+=array[current];
+                        current++;
+                    }
+                    QString savelocation=downloadFolder+filename;
+                    QFile file(savelocation);
+                    if(file.exists()){
+                        qDebug()<<"文件存在，是否覆盖";
+                        //---->>QMessageBox会使得传送阻塞，后面可能需要加一个定时器
+                        QMessageBox::StandardButton reply=QMessageBox::question(NULL, "提示", "文件"+savelocation+"存在，是否覆盖？", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+                        if(reply == QMessageBox::No)
+                        {
+                         ui->logText->append("文件存在，用户取消保存\n");
+                         return;
+                        }
 
+                    }
+                    //char* content=array.data(); //
+                    if(file.open(QIODevice::WriteOnly)){
+                        file.write(array.mid(current+1));
+                        file.close();
+                        ui->logText->append("成功接收文件，保存路径为 "+savelocation+"\n");
+                    }
+                    else{
+                        //文件写入失败
+                    }
+                    return;
+                }
             }
-            ui->logText->append(array);
+            ui->logText->append(array+"\n");
+
         });
     });
 
@@ -65,7 +89,40 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
         ui->logText->append(temp);
         QByteArray array = tcpSocket->readAll();
-        ui->logText->append(array);
+        if(array.size()>5){
+            if(array[0]=='F'&&array[1]=='I'&&array[2]=='L'&&array[3]=='E'&&array[4]=='/'){
+                int current=5;
+                QByteArray filename;
+                while(array[current]!='/'){
+                    filename+=array[current];
+                    current++;
+                }
+                QString savelocation=downloadFolder+filename;
+                QFile file(savelocation);
+                if(file.exists()){
+                    qDebug()<<"文件存在，是否覆盖";
+                    //---->>QMessageBox会使得传送阻塞，后面可能需要加一个定时器
+                    QMessageBox::StandardButton reply=QMessageBox::question(NULL, "提示", "文件"+savelocation+"存在，是否覆盖？", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+                    if(reply == QMessageBox::No)
+                    {
+                     ui->logText->append("文件存在，用户取消保存\n");
+                     return;
+                    }
+
+                }
+                //char* content=array.data(); //
+                if(file.open(QIODevice::WriteOnly)){
+                    file.write(array.mid(current+1));
+                    file.close();
+                    ui->logText->append("成功接收文件，保存路径为 "+savelocation+"\n");
+                }
+                else{
+                    //文件写入失败
+                }
+                return;
+            }
+        }
+        ui->logText->append(array+"\n");
     });
     connect(tcpSocket, &QTcpSocket::connected, [=]() {
         qDebug() << "连接成功";
@@ -108,18 +165,31 @@ void MainWindow::on_startButton_clicked() {
 
 void MainWindow::on_connectButton_clicked() {
     //获取连接信息
-    if (tcpSocket->isValid()) {
+    int theport = ui->targetPort->text().toInt();
+    if (theport >= 65535 || theport < 1) {
+        QMessageBox::information(NULL, "提示", "端口号错误，建议端口号 1024-65535 ");
+        return;
+    }
+
+    if (tcpSocket->state()>=3) {
         qDebug() << "断开连接";
         QString ip = tcpSocket->peerAddress().toString();
-        tcpSocket->disconnectFromHost();
         tcpSocket->close();
         ui->logText->insertPlainText("断开与 " + ip + " 的连接\n");
+        ui->connectButton->setText("连接");
     } else {
         QString targetIP = ui->targetIP->text();
         qint16 targetPort = ui->targetPort->text().toInt();
         //连接到服务器
-        ui->logText->insertPlainText("正在尝试连接到 " + targetIP + " \n");  //再加上错误信息跟踪？
+        ui->logText->insertPlainText("正在尝试连接到 " + targetIP + " \n");
         tcpSocket->connectToHost(QHostAddress(targetIP), targetPort);
+        if(tcpSocket->waitForConnected(3000)){
+            ui->connectButton->setText("断开");
+            ui->logText->insertPlainText("成功连接到 " + targetIP + " \n");
+        }
+        else{
+            ui->logText->insertPlainText("连接失败\n");
+        }
     }
 }
 
@@ -196,4 +266,11 @@ void MainWindow::on_fileButton_clicked()
         ui->logText->insertPlainText(temp + "\n");
     }
     file.close();
+}
+
+void MainWindow::on_actionsettings_triggered()
+{
+    DialogSettings *settingsWindow = new DialogSettings(this);
+    settingsWindow->show();
+    settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
 }

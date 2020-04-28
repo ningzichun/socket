@@ -18,6 +18,7 @@ class MainWindow : public QMainWindow {
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
     QString getHostIpAddress();
+    QString downloadFolder;
 
    private slots:
     void on_actionGetIP_triggered();
@@ -32,12 +33,13 @@ class MainWindow : public QMainWindow {
 
     void on_fileButton_clicked();
 
+    void on_actionsettings_triggered();
+
 private:
     QTcpServer* tcpServer;
     QTcpSocket* tcpSocket;
     QTcpSocket* acceptedClient;
     int isListening = 0;
-    QString downloadFolder;
     Ui::MainWindow* ui;
 };
 #endif  // MAINWINDOW_H

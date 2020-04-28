@@ -6,15 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
+    <width>741</width>
     <height>558</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
-  </property>
-  <property name="toolTip">
-   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTextEdit" name="logText">
@@ -22,7 +19,7 @@
      <rect>
       <x>20</x>
       <y>100</y>
-      <width>671</width>
+      <width>701</width>
       <height>191</height>
      </rect>
     </property>
@@ -34,9 +31,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>70</y>
+      <y>66</y>
       <width>91</width>
-      <height>16</height>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
@@ -54,7 +51,7 @@
      <rect>
       <x>20</x>
       <y>340</y>
-      <width>671</width>
+      <width>701</width>
       <height>111</height>
      </rect>
     </property>
@@ -63,9 +60,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>310</y>
+      <y>306</y>
       <width>121</width>
-      <height>16</height>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
@@ -132,9 +129,9 @@
    <widget class="QWidget" name="horizontalLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>411</width>
+      <x>10</x>
+      <y>20</y>
+      <width>421</width>
       <height>34</height>
      </rect>
     </property>
@@ -183,6 +180,9 @@
          <pointsize>12</pointsize>
         </font>
        </property>
+       <property name="maxLength">
+        <number>5</number>
+       </property>
       </widget>
      </item>
      <item>
@@ -203,9 +203,9 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>460</x>
+      <x>449</x>
       <y>10</y>
-      <width>160</width>
+      <width>171</width>
       <height>80</height>
      </rect>
     </property>
@@ -300,7 +300,7 @@
    <widget class="QPushButton" name="startButton">
     <property name="geometry">
      <rect>
-      <x>650</x>
+      <x>630</x>
       <y>20</y>
       <width>91</width>
       <height>51</height>
@@ -335,7 +335,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>750</width>
+     <width>741</width>
      <height>26</height>
     </rect>
    </property>
@@ -344,6 +344,7 @@
      <string>工具</string>
     </property>
     <addaction name="actionGetIP"/>
+    <addaction name="actionsettings"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
@@ -357,6 +358,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>关于</string>
+   </property>
+  </action>
+  <action name="actionsettings">
+   <property name="text">
+    <string>设置</string>
    </property>
   </action>
  </widget>
