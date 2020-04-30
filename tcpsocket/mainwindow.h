@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QFile>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -40,6 +41,7 @@ private:
     QTcpSocket* tcpSocket;
     QTcpSocket* acceptedClient;
     int isListening = 0;
+    QFile* receivingFile;
     Ui::MainWindow* ui;
 };
 #endif  // MAINWINDOW_H

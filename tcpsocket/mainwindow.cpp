@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     tcpServer = NULL;
     tcpSocket = NULL;
     acceptedClient = NULL;
+    receivingFile=NULL;
     downloadFolder="";
     QVector<QTcpSocket *> currentSockets;
 
@@ -39,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         qint16 port = acceptedClient->peerPort();
         QString temp = QString("接收来自 %1:%2 的入站连接").arg(ip).arg(port);
         ui->logText->insertPlainText(temp + "\n");
+
         connect(acceptedClient, &QTcpSocket::readyRead, [=]() {
             QString ip = acceptedClient->peerAddress().toString();
             qint16 port = acceptedClient->peerPort();
@@ -46,41 +48,66 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->logText->moveCursor(QTextCursor::End);
             ui->logText->append(temp);
             QByteArray array = acceptedClient->readAll();
-            if(array.size()>5){
-                if(array[0]=='F'&&array[1]=='I'&&array[2]=='L'&&array[3]=='E'&&array[4]=='/'){
-                    int current=5;
+
+            if(array.size()>1){
+                if(array[0]=='F'&&array[1]=='/'){
+                    int current=2;
                     QByteArray filename;
                     while(array[current]!='/'){
                         filename+=array[current];
                         current++;
                     }
                     QString savelocation=downloadFolder+filename;
-                    QFile file(savelocation);
-                    if(file.exists()){
-                        qDebug()<<"文件存在，是否覆盖";
-                        //---->>QMessageBox会使得传送阻塞，后面可能需要加一个定时器
-                        QMessageBox::StandardButton reply=QMessageBox::question(NULL, "提示", "文件"+savelocation+"存在，是否覆盖？", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-                        if(reply == QMessageBox::No)
-                        {
-                         ui->logText->append("文件存在，用户取消保存\n");
-                         return;
-                        }
-
-                    }
-                    //char* content=array.data(); //
-                    if(file.open(QIODevice::WriteOnly)){
-                        file.write(array.mid(current+1));
-                        file.close();
-                        ui->logText->append("成功接收文件，保存路径为 "+savelocation+"\n");
+                    receivingFile=new QFile(savelocation);
+                    if(receivingFile->open(QIODevice::WriteOnly)){
+                        receivingFile->close();
                     }
                     else{
-                        //文件写入失败
+                        delete receivingFile;
+                        receivingFile=NULL;
                     }
                     return;
                 }
+                else if(array[0]=='T'&&array[1]=='/'){
+                    ui->logText->append(array.mid(2)+"\n");
+                    ui->logText->moveCursor(QTextCursor::End);
+                    if(receivingFile!=NULL){
+                        receivingFile->close();
+                        delete receivingFile;
+                        receivingFile=NULL;
+                    }
+                }
+                else if(receivingFile==NULL){
+                    ui->logText->append(array+"\n");
+                    ui->logText->moveCursor(QTextCursor::End);
+                }
+                else{
+                    if(receivingFile->open(QIODevice::Append)){
+                        receivingFile->write(array);
+                    }
+                    else{
+                        delete receivingFile;
+                        receivingFile=NULL;
+                    }
+                }
             }
-            ui->logText->append(array+"\n");
-            ui->logText->moveCursor(QTextCursor::End);
+            else{
+                if(receivingFile==NULL){
+                                    ui->logText->append(array+"\n");
+                                    ui->logText->moveCursor(QTextCursor::End);
+                                }
+                else{
+                                    if(receivingFile->open(QIODevice::Append)){
+                                        receivingFile->write(array);
+                                        receivingFile->close();
+                                    }
+                                    else{
+                                        delete receivingFile;
+                                        receivingFile=NULL;
+                                    }
+                                }
+            }
+
 
         });
     });
@@ -92,41 +119,64 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         ui->logText->moveCursor(QTextCursor::End);
         ui->logText->append(temp);
         QByteArray array = tcpSocket->readAll();
-        if(array.size()>5){
-            if(array[0]=='F'&&array[1]=='I'&&array[2]=='L'&&array[3]=='E'&&array[4]=='/'){
-                int current=5;
+        if(array.size()>1){
+            if(array[0]=='F'&&array[1]=='/'){
+                int current=2;
                 QByteArray filename;
                 while(array[current]!='/'){
                     filename+=array[current];
                     current++;
                 }
                 QString savelocation=downloadFolder+filename;
-                QFile file(savelocation);
-                if(file.exists()){
-                    qDebug()<<"文件存在，是否覆盖";
-                    //---->>QMessageBox会使得传送阻塞，后面可能需要加一个定时器
-                    QMessageBox::StandardButton reply=QMessageBox::question(NULL, "提示", "文件"+savelocation+"存在，是否覆盖？", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-                    if(reply == QMessageBox::No)
-                    {
-                     ui->logText->append("文件存在，用户取消保存\n");
-                     return;
-                    }
-
-                }
-                //char* content=array.data(); //
-                if(file.open(QIODevice::WriteOnly)){
-                    file.write(array.mid(current+1));
-                    file.close();
-                    ui->logText->append("成功接收文件，保存路径为 "+savelocation+"\n");
+                receivingFile=new QFile(savelocation);
+                if(receivingFile->open(QIODevice::WriteOnly)){
+                    receivingFile->close();
                 }
                 else{
-                    //文件写入失败
+                    delete receivingFile;
+                    receivingFile=NULL;
                 }
                 return;
             }
+            else if(array[0]=='T'&&array[1]=='/'){
+                ui->logText->append(array.mid(2)+"\n");
+                ui->logText->moveCursor(QTextCursor::End);
+                if(receivingFile!=NULL){
+                    receivingFile->close();
+                    delete receivingFile;
+                    receivingFile=NULL;
+                }
+            }
+            else if(receivingFile==NULL){
+                ui->logText->append(array+"\n");
+                ui->logText->moveCursor(QTextCursor::End);
+            }
+            else{
+                if(receivingFile->open(QIODevice::Append)){
+                    receivingFile->write(array);
+                }
+                else{
+                    delete receivingFile;
+                    receivingFile=NULL;
+                }
+            }
         }
-        ui->logText->append(array+"\n");
-        ui->logText->moveCursor(QTextCursor::End);
+        else{
+            if(receivingFile==NULL){
+                                ui->logText->append(array+"\n");
+                                ui->logText->moveCursor(QTextCursor::End);
+                            }
+            else{
+                                if(receivingFile->open(QIODevice::Append)){
+                                    receivingFile->write(array);
+                                    receivingFile->close();
+                                }
+                                else{
+                                    delete receivingFile;
+                                    receivingFile=NULL;
+                                }
+                            }
+        }
     });
     connect(tcpSocket, &QTcpSocket::connected, [=]() {
         qDebug() << "连接成功";
@@ -202,7 +252,8 @@ void MainWindow::on_connectButton_clicked() {
 }
 
 void MainWindow::on_sendButton_clicked() {
-    QString toSend = ui->inputText->toHtml();
+    QString toSend ="T/";
+    toSend += ui->inputText->toHtml();
     ui->selectedFile->setText("发送成功！");
     ui->logText->moveCursor(QTextCursor::End);
     if (acceptedClient != NULL) {
@@ -258,7 +309,14 @@ void MainWindow::on_fileButton_clicked()
 
     QFile file(path);
     file.open(QIODevice::ReadOnly);
-    QByteArray array="FILE/"+filename.toUtf8()+"/"; //打上标记区分文字和文件
+    qint64 size=file.size();
+
+    QByteArray array="F/"+filename.toUtf8()+"/"+QByteArray::number(size)+"/"; //打上标记区分文字和文件
+
+    int remainSize=size;
+    const int bufsize=1024*32;
+    char buf[bufsize]={0};
+
     array+=file.readAll();
     //ui->logText->append(array);
     ui->logText->moveCursor(QTextCursor::End);
@@ -266,15 +324,55 @@ void MainWindow::on_fileButton_clicked()
         if (acceptedClient->isValid()) {
             QString ip = acceptedClient->peerAddress().toString();
             QString temp = QString("正在发送文件到 %1 ").arg(ip);
-            acceptedClient->write(array);
             ui->logText->insertPlainText(temp + "\n");
+
+            acceptedClient->write(array);
+            if(!acceptedClient->waitForBytesWritten(3000)){
+                qDebug()<<"超时";
+                return;
+            }
+            while(remainSize>0){
+                int blocksize=bufsize;
+                if(bufsize<remainSize){
+                    blocksize=remainSize;
+                }
+                file.read(buf,bufsize);
+                remainSize-=bufsize;
+                acceptedClient->write(buf,bufsize);
+                if(!acceptedClient->waitForBytesWritten(3000)){
+                    qDebug()<<"超时";
+                    return;
+                }
+                remainSize-=blocksize;
+            }
+            ui->logText->insertPlainText("发送完成\n");
         }
     }
     if (tcpSocket->isValid()) {
         QString ip = tcpSocket->peerAddress().toString();
         QString temp = QString("正在发送文件到 %1 ").arg(ip);
-        tcpSocket->write(array);
         ui->logText->insertPlainText(temp + "\n");
+
+        tcpSocket->write(array);
+        if(!tcpSocket->waitForBytesWritten(3000)){
+            qDebug()<<"超时";
+            return;
+        }
+        while(remainSize>0){
+            int blocksize=bufsize;
+            if(bufsize<remainSize){
+                blocksize=remainSize;
+            }
+            file.read(buf,bufsize);
+            remainSize-=bufsize;
+            tcpSocket->write(buf,bufsize);
+            if(!tcpSocket->waitForBytesWritten(3000)){
+                qDebug()<<"超时";
+                return;
+            }
+            remainSize-=blocksize;
+        }
+        ui->logText->insertPlainText("发送完成\n");
     }
     file.close();
     ui->logText->moveCursor(QTextCursor::End);
