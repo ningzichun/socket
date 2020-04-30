@@ -308,18 +308,20 @@ void MainWindow::on_fileButton_clicked()
     ui->selectedFile->setText("选择的文件为："+path);
     QFileInfo fileinfo= QFileInfo(path);
     QString filename=fileinfo.fileName();
+    qint64 size=fileinfo.size();
 
     QFile file(path);
-    file.open(QIODevice::ReadOnly);
-    qint64 size=file.size();
+    if(!file.open(QIODevice::ReadOnly)){
+        qDebug()<<"文件打开失败";
+        return;
+    }
 
     QByteArray array="F/"+filename.toUtf8()+"/"+QByteArray::number(size)+"/"; //打上标记区分文字和文件
 
-    int remainSize=size;
-    const int bufsize=1024*32;
+    int len;
+    const int bufsize=1024*16;
     char buf[bufsize]={0};
 
-    array+=file.readAll();
     //ui->logText->append(array);
     ui->logText->moveCursor(QTextCursor::End);
     if (acceptedClient != NULL) {
@@ -333,24 +335,18 @@ void MainWindow::on_fileButton_clicked()
                 qDebug()<<"超时";
                 return;
             }
-            while(remainSize>0){
-                int blocksize=bufsize;
-                if(bufsize<remainSize){
-                    blocksize=remainSize;
-                }
-                file.read(buf,bufsize);
-                remainSize-=bufsize;
-                acceptedClient->write(buf,bufsize);
-                if(!acceptedClient->waitForBytesWritten(3000)){
-                    qDebug()<<"超时";
-                    return;
-                }
-                remainSize-=blocksize;
-            }
+            do{
+                len=file.read(buf,sizeof(buf));
+                if(len>0) acceptedClient->write(buf,len);
+//                if(!acceptedClient->waitForBytesWritten(3000)){
+//                    qDebug()<<"超时";
+//                    return;
+//                }
+            }while(len>0);
+
             ui->logText->insertPlainText("发送完成\n");
         }
     }
-     remainSize=size;
     if (tcpSocket->isValid()) {
         QString ip = tcpSocket->peerAddress().toString();
         QString temp = QString("正在发送文件到 %1 ").arg(ip);
@@ -361,22 +357,14 @@ void MainWindow::on_fileButton_clicked()
             qDebug()<<"超时";
             return;
         }
-        while(remainSize>0){
-            int blocksize=bufsize;
-            if(bufsize<remainSize){
-                blocksize=remainSize;
-            }
-            file.read(buf,bufsize);
-            remainSize-=bufsize;
-            tcpSocket->write(buf,bufsize);
-            qDebug()<<1;
-            if(!tcpSocket->waitForBytesWritten(3000)){
-                qDebug()<<"超时";
-                return;
-            }
-            qDebug()<<2;
-            remainSize-=blocksize;
-        }
+        do{
+            len=file.read(buf,sizeof(buf));
+            if(len>0) tcpSocket->write(buf,len);
+//                if(!tcpSocket->waitForBytesWritten(3000)){
+//                    qDebug()<<"超时";
+//                    return;
+//                }
+        }while(len>0);
         ui->logText->insertPlainText("发送完成\n");
     }
     file.close();
