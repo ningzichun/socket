@@ -84,6 +84,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 else{
                     if(receivingFile->open(QIODevice::Append)){
                         receivingFile->write(array);
+                        receivingFile->close();
                     }
                     else{
                         delete receivingFile;
@@ -93,19 +94,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
             else{
                 if(receivingFile==NULL){
-                                    ui->logText->append(array+"\n");
-                                    ui->logText->moveCursor(QTextCursor::End);
-                                }
+                    ui->logText->append(array+"\n");
+                    ui->logText->moveCursor(QTextCursor::End);
+                }
                 else{
-                                    if(receivingFile->open(QIODevice::Append)){
-                                        receivingFile->write(array);
-                                        receivingFile->close();
-                                    }
-                                    else{
-                                        delete receivingFile;
-                                        receivingFile=NULL;
-                                    }
-                                }
+                    if(receivingFile->open(QIODevice::Append)){
+                        receivingFile->write(array);
+                        receivingFile->close();
+                    }
+                    else{
+                        delete receivingFile;
+                        receivingFile=NULL;
+                    }
+                }
             }
 
 
@@ -154,6 +155,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             else{
                 if(receivingFile->open(QIODevice::Append)){
                     receivingFile->write(array);
+                    receivingFile->close();
                 }
                 else{
                     delete receivingFile;
@@ -163,19 +165,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
         else{
             if(receivingFile==NULL){
-                                ui->logText->append(array+"\n");
-                                ui->logText->moveCursor(QTextCursor::End);
-                            }
+                ui->logText->append(array+"\n");
+                ui->logText->moveCursor(QTextCursor::End);
+            }
             else{
-                                if(receivingFile->open(QIODevice::Append)){
-                                    receivingFile->write(array);
-                                    receivingFile->close();
-                                }
-                                else{
-                                    delete receivingFile;
-                                    receivingFile=NULL;
-                                }
-                            }
+                if(receivingFile->open(QIODevice::Append)){
+                    receivingFile->write(array);
+                    receivingFile->close();
+                }
+                else{
+                    delete receivingFile;
+                    receivingFile=NULL;
+                }
+            }
         }
     });
     connect(tcpSocket, &QTcpSocket::connected, [=]() {
@@ -348,6 +350,7 @@ void MainWindow::on_fileButton_clicked()
             ui->logText->insertPlainText("发送完成\n");
         }
     }
+     remainSize=size;
     if (tcpSocket->isValid()) {
         QString ip = tcpSocket->peerAddress().toString();
         QString temp = QString("正在发送文件到 %1 ").arg(ip);
@@ -366,10 +369,12 @@ void MainWindow::on_fileButton_clicked()
             file.read(buf,bufsize);
             remainSize-=bufsize;
             tcpSocket->write(buf,bufsize);
+            qDebug()<<1;
             if(!tcpSocket->waitForBytesWritten(3000)){
                 qDebug()<<"超时";
                 return;
             }
+            qDebug()<<2;
             remainSize-=blocksize;
         }
         ui->logText->insertPlainText("发送完成\n");
