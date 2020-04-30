@@ -46,11 +46,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             qint16 port = acceptedClient->peerPort();
             QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
             ui->logText->moveCursor(QTextCursor::End);
-            ui->logText->append(temp);
             QByteArray array = acceptedClient->readAll();
 
             if(array.size()>1){
-                if(array[0]=='F'&&array[1]=='/'){
+                if(array[0]=='F'&&array[1]=='/'){ //文件
                     int current=2;
                     QByteArray filename;
                     while(array[current]!='/'){
@@ -59,29 +58,32 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                     }
                     QString savelocation=downloadFolder+filename;
                     receivingFile=new QFile(savelocation);
-                    if(receivingFile->open(QIODevice::WriteOnly)){
+                    if(receivingFile->open(QIODevice::WriteOnly)){ //覆盖
+                        ui->logText->append("接收来自 "+ip+" 的文件到 "+receivingFile->fileName()+"\n");
                         receivingFile->close();
                     }
-                    else{
+                    else{ //打开失败，停止传输
                         delete receivingFile;
                         receivingFile=NULL;
                     }
                     return;
                 }
-                else if(array[0]=='T'&&array[1]=='/'){
+                else if(array[0]=='T'&&array[1]=='/'){ //文本
+                    ui->logText->append(temp);
                     ui->logText->append(array.mid(2)+"\n");
                     ui->logText->moveCursor(QTextCursor::End);
-                    if(receivingFile!=NULL){
+                    if(receivingFile!=NULL){ //关闭文件
                         receivingFile->close();
                         delete receivingFile;
                         receivingFile=NULL;
                     }
                 }
-                else if(receivingFile==NULL){
+                else if(receivingFile==NULL){ //文本
+                    ui->logText->append(temp);
                     ui->logText->append(array+"\n");
                     ui->logText->moveCursor(QTextCursor::End);
                 }
-                else{
+                else{ //文件
                     if(receivingFile->open(QIODevice::Append)){
                         receivingFile->write(array);
                         receivingFile->close();
@@ -93,11 +95,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 }
             }
             else{
-                if(receivingFile==NULL){
+                if(receivingFile==NULL){ //文本
                     ui->logText->append(array+"\n");
                     ui->logText->moveCursor(QTextCursor::End);
                 }
-                else{
+                else{ //文件
                     if(receivingFile->open(QIODevice::Append)){
                         receivingFile->write(array);
                         receivingFile->close();
@@ -108,7 +110,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                     }
                 }
             }
-
 
         });
     });
@@ -118,10 +119,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         qint16 port = tcpSocket->peerPort();
         QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
         ui->logText->moveCursor(QTextCursor::End);
-        ui->logText->append(temp);
         QByteArray array = tcpSocket->readAll();
         if(array.size()>1){
-            if(array[0]=='F'&&array[1]=='/'){
+            if(array[0]=='F'&&array[1]=='/'){ //文件
                 int current=2;
                 QByteArray filename;
                 while(array[current]!='/'){
@@ -130,29 +130,32 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 }
                 QString savelocation=downloadFolder+filename;
                 receivingFile=new QFile(savelocation);
-                if(receivingFile->open(QIODevice::WriteOnly)){
+                if(receivingFile->open(QIODevice::WriteOnly)){ //覆盖
+                     ui->logText->append("接收来自 "+ip+" 的文件到 "+receivingFile->fileName()+"\n");
                     receivingFile->close();
                 }
-                else{
+                else{ //打开失败，停止传输
                     delete receivingFile;
                     receivingFile=NULL;
                 }
                 return;
             }
-            else if(array[0]=='T'&&array[1]=='/'){
+            else if(array[0]=='T'&&array[1]=='/'){ //文本
+                ui->logText->append(temp);
                 ui->logText->append(array.mid(2)+"\n");
                 ui->logText->moveCursor(QTextCursor::End);
-                if(receivingFile!=NULL){
+                if(receivingFile!=NULL){ //关闭文件
                     receivingFile->close();
                     delete receivingFile;
                     receivingFile=NULL;
                 }
             }
-            else if(receivingFile==NULL){
+            else if(receivingFile==NULL){ //文本
+                ui->logText->append(temp);
                 ui->logText->append(array+"\n");
                 ui->logText->moveCursor(QTextCursor::End);
             }
-            else{
+            else{ //文件
                 if(receivingFile->open(QIODevice::Append)){
                     receivingFile->write(array);
                     receivingFile->close();
@@ -164,11 +167,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         }
         else{
-            if(receivingFile==NULL){
+            if(receivingFile==NULL){ //文本
                 ui->logText->append(array+"\n");
                 ui->logText->moveCursor(QTextCursor::End);
             }
-            else{
+            else{ //文件
                 if(receivingFile->open(QIODevice::Append)){
                     receivingFile->write(array);
                     receivingFile->close();
