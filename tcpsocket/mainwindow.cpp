@@ -338,10 +338,10 @@ void MainWindow::on_fileButton_clicked()
             do{
                 len=file.read(buf,sizeof(buf));
                 if(len>0) acceptedClient->write(buf,len);
-//                if(!acceptedClient->waitForBytesWritten(3000)){
-//                    qDebug()<<"超时";
-//                    return;
-//                }
+                //                if(!acceptedClient->waitForBytesWritten(3000)){
+                //                    qDebug()<<"超时";
+                //                    return;
+                //                }
             }while(len>0);
 
             ui->logText->insertPlainText("发送完成\n");
@@ -360,10 +360,10 @@ void MainWindow::on_fileButton_clicked()
         do{
             len=file.read(buf,sizeof(buf));
             if(len>0) tcpSocket->write(buf,len);
-//                if(!tcpSocket->waitForBytesWritten(3000)){
-//                    qDebug()<<"超时";
-//                    return;
-//                }
+            //                if(!tcpSocket->waitForBytesWritten(3000)){
+            //                    qDebug()<<"超时";
+            //                    return;
+            //                }
         }while(len>0);
         ui->logText->insertPlainText("发送完成\n");
     }
