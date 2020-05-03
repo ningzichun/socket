@@ -278,6 +278,7 @@ void MainWindow::on_connectButton_clicked() {
 void MainWindow::on_sendButton_clicked() {
     QString toSend ="T/";
     toSend += ui->inputText->toHtml();
+    toSend+="<br>";
     ui->logText->moveCursor(QTextCursor::End);
     bool sent=0;
     for(int i=0;i<tcpClient.size();i++){
