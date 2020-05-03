@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->connectButton->setText("连接");
             QString ip = tcpSocket->peerAddress().toString();
             qint16 port = tcpSocket->peerPort();
-            QString temp = QString("丢失与 %1:%2 的连接").arg(ip).arg(port);
+            QString temp = QString("断开与 %1:%2 的连接").arg(ip).arg(port);
             ui->logText->moveCursor(QTextCursor::End);
             ui->logText->insertPlainText(temp + "\n");
         });
@@ -77,11 +77,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 MainWindow::~MainWindow() { delete ui; }
 
+QString getDate(){
+    QDateTime current_date_time =QDateTime::currentDateTime();
+    QString current_date =current_date_time.toString("[yyyy.MM.dd hh:mm:ss]");
+    return current_date;
+}
+
 
 void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数据函数，传入接收socket
     QString ip = targetSocket->peerAddress().toString(); //获取ip
     qint16 port = targetSocket->peerPort(); //获取端口
-    QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port); //输出信息
+    QString temp = getDate();
+    temp+=QString("来自 %1:%2 的信息:").arg(ip).arg(port); //输出信息
     ui->logText->moveCursor(QTextCursor::End); //移动指针
 
     QDateTime current_date_time =QDateTime::currentDateTime();
@@ -229,6 +236,8 @@ void MainWindow::on_startButton_clicked() { //Start Listening
         return;
     }
     ui->logText->insertPlainText("已启动监听，端口号" + ui->listeningPort->text() + "\n");
+
+    ui->logText->moveCursor(QTextCursor::End);
 }
 
 void MainWindow::on_connectButton_clicked() {
@@ -245,13 +254,14 @@ void MainWindow::on_connectButton_clicked() {
         QString ip = tcpSocket->peerAddress().toString();
         QString port=QString::number(tcpSocket->peerPort());
         tcpSocket->close();
-        ui->logText->insertPlainText("断开与 " + ip + ":" + port+" 的连接\n");
         ui->connectButton->setText("连接");
     } else {
         QString targetIP = ui->targetIP->text();
         qint16 targetPort = ui->targetPort->text().toInt();
         //连接到服务器
         ui->logText->insertPlainText("正在连接到 " + targetIP + ":"+QString::number(targetPort)+" \n");
+        qDebug()<<"连接中";
+        ui->logText->moveCursor(QTextCursor::End);
         tcpSocket->connectToHost(QHostAddress(targetIP), targetPort);
         if(tcpSocket->waitForConnected(3000)){
             ui->connectButton->setText("断开");
@@ -261,17 +271,20 @@ void MainWindow::on_connectButton_clicked() {
             ui->logText->insertPlainText("连接失败\n");
         }
     }
+
+    ui->logText->moveCursor(QTextCursor::End);
 }
 
 void MainWindow::on_sendButton_clicked() {
     QString toSend ="T/";
     toSend += ui->inputText->toHtml();
-    ui->selectedFile->setText("发送成功！");
     ui->logText->moveCursor(QTextCursor::End);
+    bool sent=0;
     for(int i=0;i<tcpClient.size();i++){
         acceptedClient=tcpClient.at(i);
         if (acceptedClient != NULL) {
             if (acceptedClient->state()>=3) {
+                sent=1;
                 QString ip = acceptedClient->peerAddress().toString();
                 QString temp = QString("正在发送数据到 %1 ").arg(ip);
                 acceptedClient->write(toSend.toUtf8().data());
@@ -280,10 +293,17 @@ void MainWindow::on_sendButton_clicked() {
         }
     }
     if (tcpSocket->state()>=3) {
+        sent=1;
         QString ip = tcpSocket->peerAddress().toString();
         QString temp = QString("正在发送数据到 %1 ").arg(ip);
         tcpSocket->write(toSend.toUtf8().data());
         ui->logText->insertPlainText(temp + "\n");
+    }
+    if(sent){
+        ui->selectedFile->setText("发送成功！");
+    }
+    else{
+        ui->logText->insertPlainText("无连接\n");
     }
 }
 
@@ -292,20 +312,29 @@ void MainWindow::on_sendButton_clicked() {
 void MainWindow::on_fileButton_clicked()
 {
     QString path=QFileDialog::getOpenFileName(this,"打开文件");
+    if(path.size()<1){
+        ui->logText->insertPlainText("请选择有效的文件\n");
+        return;
+    }
+    bool sent=0;
     ui->selectedFile->setText("选择的文件为："+path);
     for(int i=0;i<tcpClient.size();i++){
         acceptedClient=tcpClient.at(i);
         if (acceptedClient != NULL) {
             if (acceptedClient->state()>=3) {
+                sent=1;
                 sendFile(acceptedClient,path);
             }
         }
     }
 
     if (tcpSocket->state()>=3) {
+        sent=1;
         sendFile(tcpSocket,path);
     }
-
+    if(!sent){
+        ui->logText->insertPlainText("无连接\n");
+    }
     ui->logText->moveCursor(QTextCursor::End);
 }
 
