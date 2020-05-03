@@ -7,32 +7,36 @@
 #include <QString>
 #include <QVector>
 #include <QtNetwork>
-#include<QFileDialog>
+#include <QFileDialog>
 
 #include "dialogabout.h"
 #include "dialogip.h"
 #include "dialogsettings.h"
+#include "dialogclientinfo.h"
 #include "ui_mainwindow.h"
+#include "tcpsocket.h"
+
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    // https://www.bilibili.com/video/BV1yt411d7E4?p=57
-    //先测试单线程发文本
     setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
     setFixedSize(this->width(), this->height());  // 禁止拖动窗口大小
     this->setWindowTitle("点到点通信");
-    tcpServer = NULL;
+
+    tcpServer = NULL; //初始化指针
     tcpSocket = NULL;
     acceptedClient = NULL;
     receivingFile=NULL;
     downloadFolder="";
-    QVector<QTcpSocket *> currentSockets;
 
-    ui->myIP->setText(getHostIpAddress());
+
+    ui->myIP->setText(getHostIpAddress()); //显示网络接口的某一个IP
+    ui->logText->insertPlainText("请开启监听或连接到其他客户端\n");
+
     tcpServer = new QTcpServer(this);
     tcpSocket = new QTcpSocket(this);
 
-    connect(tcpServer, &QTcpServer::newConnection, [=]() {
+    connect(tcpServer, &QTcpServer::newConnection, [=]() { //接受传入连接
         //取出建立好的套接字
         acceptedClient = tcpServer->nextPendingConnection();
         //获取对方信息
@@ -41,149 +45,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QString temp = QString("接收来自 %1:%2 的入站连接").arg(ip).arg(port);
         ui->logText->insertPlainText(temp + "\n");
 
-        connect(acceptedClient, &QTcpSocket::readyRead, [=]() {
-            QString ip = acceptedClient->peerAddress().toString();
-            qint16 port = acceptedClient->peerPort();
-            QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
-            ui->logText->moveCursor(QTextCursor::End);
-            QByteArray array = acceptedClient->readAll();
+        tcpClient.append(acceptedClient); //加入到客户端列表中
 
-            if(array.size()>1){
-                if(array[0]=='F'&&array[1]=='/'){ //文件
-                    int current=2;
-                    QByteArray filename;
-                    while(array[current]!='/'){
-                        filename+=array[current];
-                        current++;
-                    }
-                    QString savelocation=downloadFolder+filename;
-                    receivingFile=new QFile(savelocation);
-                    if(receivingFile->open(QIODevice::WriteOnly)){ //覆盖
-                        ui->logText->append("接收来自 "+ip+" 的文件到 "+receivingFile->fileName()+"\n");
-                        receivingFile->close();
-                    }
-                    else{ //打开失败，停止传输
-                        delete receivingFile;
-                        receivingFile=NULL;
-                    }
-                    return;
-                }
-                else if(array[0]=='T'&&array[1]=='/'){ //文本
-                    ui->logText->append(temp);
-                    ui->logText->append(array.mid(2)+"\n");
-                    ui->logText->moveCursor(QTextCursor::End);
-                    if(receivingFile!=NULL){ //关闭文件
-                        receivingFile->close();
-                        delete receivingFile;
-                        receivingFile=NULL;
-                    }
-                }
-                else if(receivingFile==NULL){ //文本
-                    ui->logText->append(temp);
-                    ui->logText->append(array+"\n");
-                    ui->logText->moveCursor(QTextCursor::End);
-                }
-                else{ //文件
-                    if(receivingFile->open(QIODevice::Append)){
-                        receivingFile->write(array);
-                        receivingFile->close();
-                    }
-                    else{
-                        delete receivingFile;
-                        receivingFile=NULL;
-                    }
+        connect(acceptedClient, &QTcpSocket::readyRead, [=]() { //处理事件：对端有数据传来
+            QByteArray array = "";
+            for(int i=0;i<tcpClient.length();i++){ //找到触发事件的客户端
+                array = tcpClient.at(i)->readAll();
+                if(!array.isEmpty()) {
+                    readData(tcpClient.at(i),array); //调用readData函数处理数据
+                    break;
                 }
             }
-            else{
-                if(receivingFile==NULL){ //文本
-                    ui->logText->append(array+"\n");
-                    ui->logText->moveCursor(QTextCursor::End);
-                }
-                else{ //文件
-                    if(receivingFile->open(QIODevice::Append)){
-                        receivingFile->write(array);
-                        receivingFile->close();
-                    }
-                    else{
-                        delete receivingFile;
-                        receivingFile=NULL;
-                    }
-                }
-            }
-
         });
     });
 
-    connect(tcpSocket, &QTcpSocket::readyRead, [=]() {
-        QString ip = tcpSocket->peerAddress().toString();
-        qint16 port = tcpSocket->peerPort();
-        QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port);
-        ui->logText->moveCursor(QTextCursor::End);
-        QByteArray array = tcpSocket->readAll();
-        if(array.size()>1){
-            if(array[0]=='F'&&array[1]=='/'){ //文件
-                int current=2;
-                QByteArray filename;
-                while(array[current]!='/'){
-                    filename+=array[current];
-                    current++;
-                }
-                QString savelocation=downloadFolder+filename;
-                receivingFile=new QFile(savelocation);
-                if(receivingFile->open(QIODevice::WriteOnly)){ //覆盖
-                     ui->logText->append("接收来自 "+ip+" 的文件到 "+receivingFile->fileName()+"\n");
-                    receivingFile->close();
-                }
-                else{ //打开失败，停止传输
-                    delete receivingFile;
-                    receivingFile=NULL;
-                }
-                return;
-            }
-            else if(array[0]=='T'&&array[1]=='/'){ //文本
-                ui->logText->append(temp);
-                ui->logText->append(array.mid(2)+"\n");
-                ui->logText->moveCursor(QTextCursor::End);
-                if(receivingFile!=NULL){ //关闭文件
-                    receivingFile->close();
-                    delete receivingFile;
-                    receivingFile=NULL;
-                }
-            }
-            else if(receivingFile==NULL){ //文本
-                ui->logText->append(temp);
-                ui->logText->append(array+"\n");
-                ui->logText->moveCursor(QTextCursor::End);
-            }
-            else{ //文件
-                if(receivingFile->open(QIODevice::Append)){
-                    receivingFile->write(array);
-                    receivingFile->close();
-                }
-                else{
-                    delete receivingFile;
-                    receivingFile=NULL;
-                }
-            }
-        }
-        else{
-            if(receivingFile==NULL){ //文本
-                ui->logText->append(array+"\n");
-                ui->logText->moveCursor(QTextCursor::End);
-            }
-            else{ //文件
-                if(receivingFile->open(QIODevice::Append)){
-                    receivingFile->write(array);
-                    receivingFile->close();
-                }
-                else{
-                    delete receivingFile;
-                    receivingFile=NULL;
-                }
-            }
-        }
+    connect(tcpSocket, &QTcpSocket::readyRead, [=]() { //对端有数据传来
+        ui->logText->moveCursor(QTextCursor::End); //移动指针
+        QByteArray array = tcpSocket->readAll(); //从socket读取数据
+        readData(tcpSocket,array); //调用readData函数处理数据
     });
-    connect(tcpSocket, &QTcpSocket::connected, [=]() {
+    connect(tcpSocket, &QTcpSocket::connected, [=]() { //成功连接到对端
         qDebug() << "连接成功";
         QString ip = tcpSocket->peerAddress().toString();
         qint16 port = tcpSocket->peerPort();
@@ -192,10 +73,82 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         ui->logText->insertPlainText(temp + "\n");
     });
 
-    ui->logText->insertPlainText("请开启监听或连接到其他客户端\n");
 }
 
 MainWindow::~MainWindow() { delete ui; }
+
+
+void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数据函数，传入接收socket
+    QString ip = targetSocket->peerAddress().toString(); //获取ip
+    qint16 port = targetSocket->peerPort(); //获取端口
+    QString temp = QString("来自 %1:%2 的信息:").arg(ip).arg(port); //输出信息
+    ui->logText->moveCursor(QTextCursor::End); //移动指针
+
+    QDateTime current_date_time =QDateTime::currentDateTime();
+    QString current_date =current_date_time.toString("yyyy.MM.dd hh:mm:ss.zzz ddd");
+    qDebug()<<"readData"<<current_date;
+    qDebug()<<array.size();
+
+
+    if(array.size()>1){
+        if(array[0]=='F'&&array[1]=='/'){ //文件头
+            int current=2;
+            QByteArray filename;
+            while(array[current]!='/'){
+                filename+=array[current];
+                current++;
+            }
+            QString savelocation=downloadFolder+filename;
+            receivingFile=new QFile(savelocation);
+            if(receivingFile->open(QIODevice::WriteOnly)){ //覆盖
+                ui->logText->append("接收来自 "+ip+" 的文件到 "+receivingFile->fileName()+"\n");
+                receivingFile->close();
+            }
+            else{ //打开失败，停止传输
+                delete receivingFile;
+                receivingFile=NULL;
+            }
+            return;
+        }
+        else if(array[0]=='T'&&array[1]=='/'){ //HTML
+            ui->logText->append(temp);
+            ui->logText->append(array.mid(2)+"\n");
+            ui->logText->moveCursor(QTextCursor::End);
+            if(receivingFile!=NULL){ //关闭文件
+                receivingFile->close();
+                delete receivingFile;
+                receivingFile=NULL;
+            }
+        }
+        else{ //文件
+            if(receivingFile->open(QIODevice::Append)){
+                receivingFile->write(array);
+                receivingFile->close();
+            }
+            else{
+                delete receivingFile;
+                receivingFile=NULL;
+            }
+        }
+    }
+    else{ //接收小于2字节的内容，似乎不会拆分成那么小
+        if(receivingFile==NULL){ //文本
+            ui->logText->append(array+"\n");
+            ui->logText->moveCursor(QTextCursor::End);
+        }
+        else{ //文件
+            if(receivingFile->open(QIODevice::Append)){
+                receivingFile->write(array);
+                receivingFile->close();
+            }
+            else{
+                delete receivingFile;
+                receivingFile=NULL;
+            }
+        }
+    }
+}
+
 
 void MainWindow::on_startButton_clicked() {
     if (tcpServer->isListening()) {
@@ -261,12 +214,15 @@ void MainWindow::on_sendButton_clicked() {
     toSend += ui->inputText->toHtml();
     ui->selectedFile->setText("发送成功！");
     ui->logText->moveCursor(QTextCursor::End);
-    if (acceptedClient != NULL) {
-        if (acceptedClient->isValid()) {
-            QString ip = acceptedClient->peerAddress().toString();
-            QString temp = QString("正在发送数据到 %1 ").arg(ip);
-            acceptedClient->write(toSend.toUtf8().data());
-            ui->logText->insertPlainText(temp + "\n");
+    for(int i=0;i<tcpClient.size();i++){
+        acceptedClient=tcpClient.at(i);
+        if (acceptedClient != NULL) {
+            if (acceptedClient->isValid()) {
+                QString ip = acceptedClient->peerAddress().toString();
+                QString temp = QString("正在发送数据到 %1 ").arg(ip);
+                acceptedClient->write(toSend.toUtf8().data());
+                ui->logText->insertPlainText(temp + "\n");
+            }
         }
     }
     if (tcpSocket->isValid()) {
@@ -277,38 +233,29 @@ void MainWindow::on_sendButton_clicked() {
     }
 }
 
-void MainWindow::on_actionGetIP_triggered() {
-    DialogIP *IPaddr = new DialogIP(this);
-    IPaddr->show();
-    IPaddr->setAttribute(Qt::WA_DeleteOnClose);
-}
 
-void MainWindow::on_actionAbout_triggered() {
-    DialogAbout *aboutWindow = new DialogAbout(this);
-    aboutWindow->show();
-    aboutWindow->setAttribute(Qt::WA_DeleteOnClose);
-}
-
-QString MainWindow::getHostIpAddress() {
-    QString strIpAddress;
-    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
-    // 获取第一个本主机的IPv4地址
-    int nListSize = ipAddressesList.size();
-    for (int i = 0; i < nListSize; ++i) {
-        if (ipAddressesList.at(i) != QHostAddress::LocalHost && ipAddressesList.at(i).toIPv4Address()) {
-            strIpAddress = ipAddressesList.at(i).toString();
-            break;
-        }
-    }
-    // 如果没有找到，则以本地IP地址为IP
-    if (strIpAddress.isEmpty()) strIpAddress = QHostAddress(QHostAddress::LocalHost).toString();
-    return strIpAddress;
-}
 
 void MainWindow::on_fileButton_clicked()
 {
     QString path=QFileDialog::getOpenFileName(this,"打开文件");
     ui->selectedFile->setText("选择的文件为："+path);
+    for(int i=0;i<tcpClient.size();i++){
+        acceptedClient=tcpClient.at(i);
+        if (acceptedClient != NULL) {
+            if (acceptedClient->isValid()) {
+                sendFile(acceptedClient,path);
+            }
+        }
+    }
+
+    if (tcpSocket->isValid()) {
+        sendFile(tcpSocket,path);
+    }
+
+    ui->logText->moveCursor(QTextCursor::End);
+}
+
+void MainWindow::sendFile(QTcpSocket *targetSocket, QString &path){
     QFileInfo fileinfo= QFileInfo(path);
     QString filename=fileinfo.fileName();
     qint64 size=fileinfo.size();
@@ -325,58 +272,119 @@ void MainWindow::on_fileButton_clicked()
     const int bufsize=1024*16;
     char buf[bufsize]={0};
 
-    //ui->logText->append(array);
     ui->logText->moveCursor(QTextCursor::End);
-    if (acceptedClient != NULL) {
-        if (acceptedClient->isValid()) {
-            QString ip = acceptedClient->peerAddress().toString();
-            QString temp = QString("正在发送文件到 %1 ").arg(ip);
-            ui->logText->insertPlainText(temp + "\n");
+    QString ip = targetSocket->peerAddress().toString();
+    QString temp = QString("正在发送文件到 %1 ").arg(ip);
+    ui->logText->insertPlainText(temp + "\n");
 
-            acceptedClient->write(array);
-            if(!acceptedClient->waitForBytesWritten(3000)){
-                qDebug()<<"超时";
-                return;
-            }
-            do{
-                len=file.read(buf,sizeof(buf));
-                if(len>0) acceptedClient->write(buf,len);
-                //                if(!acceptedClient->waitForBytesWritten(3000)){
-                //                    qDebug()<<"超时";
-                //                    return;
-                //                }
-            }while(len>0);
-
-            ui->logText->insertPlainText("发送完成\n");
-        }
+    targetSocket->write(array);
+    if(!targetSocket->waitForBytesWritten(3000)){
+        qDebug()<<"超时";
+        return;
     }
-    if (tcpSocket->isValid()) {
-        QString ip = tcpSocket->peerAddress().toString();
-        QString temp = QString("正在发送文件到 %1 ").arg(ip);
-        ui->logText->insertPlainText(temp + "\n");
+    do{
+        len=file.read(buf,sizeof(buf));
+        if(len>0) targetSocket->write(buf,len);
+    }while(len>0);
 
-        tcpSocket->write(array);
-        if(!tcpSocket->waitForBytesWritten(3000)){
-            qDebug()<<"超时";
-            return;
-        }
-        do{
-            len=file.read(buf,sizeof(buf));
-            if(len>0) tcpSocket->write(buf,len);
-            //                if(!tcpSocket->waitForBytesWritten(3000)){
-            //                    qDebug()<<"超时";
-            //                    return;
-            //                }
-        }while(len>0);
-        ui->logText->insertPlainText("发送完成\n");
-    }
+    QByteArray fini="E/";
+    targetSocket->write(fini);
+
+    ui->logText->insertPlainText("发送完成\n");
     file.close();
-    ui->logText->moveCursor(QTextCursor::End);
 }
+
+QString MainWindow::getHostIpAddress() { //获取一个本主机的IPv4地址
+    QString strIpAddress;
+    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
+
+    int nListSize = ipAddressesList.size();
+    for (int i = 0; i < nListSize; ++i) { //第一次查找，看看有没有公网IPv4地址
+        if (ipAddressesList.at(i) != QHostAddress::LocalHost && ipAddressesList.at(i).isGlobal() &&ipAddressesList.at(i).toIPv4Address()) {
+            strIpAddress = ipAddressesList.at(i).toString();
+            break;
+        }
+    }
+    if (strIpAddress.isEmpty()) {
+        for (int i = 0; i < nListSize; ++i) { //第二次查找，看看有没有非网关IPv4地址
+            QString temp=ipAddressesList.at(i).toString();
+            if (ipAddressesList.at(i) != QHostAddress::LocalHost && temp[temp.size()-2]!='.'&& temp[temp.size()-2]!='1' &&ipAddressesList.at(i).toIPv4Address()) {
+                strIpAddress = ipAddressesList.at(i).toString();
+                break;
+            }
+        }
+    }
+    if (strIpAddress.isEmpty()) {
+        for (int i = 0; i < nListSize; ++i) { //第三次查找，返回第一个非回环地址
+            QString temp=ipAddressesList.at(i).toString();
+            if (ipAddressesList.at(i) != QHostAddress::LocalHost && !ipAddressesList.at(i).isLoopback()) {
+                strIpAddress = ipAddressesList.at(i).toString();
+                break;
+            }
+        }
+    }
+    // 如果没有找到，则以本地IP地址为IP
+    if (strIpAddress.isEmpty()) strIpAddress = QHostAddress(QHostAddress::LocalHost).toString();
+    return strIpAddress;
+}
+
+void MainWindow::on_actionGetIP_triggered() {
+    DialogIP *IPaddr = new DialogIP(this);
+    IPaddr->show();
+    IPaddr->setAttribute(Qt::WA_DeleteOnClose);
+}
+
+void MainWindow::on_actionAbout_triggered() {
+    DialogAbout *aboutWindow = new DialogAbout(this);
+    aboutWindow->show();
+    aboutWindow->setAttribute(Qt::WA_DeleteOnClose);
+}
+
 
 void MainWindow::on_actionsettings_triggered()
 {
     DialogSettings *settingsWindow = new DialogSettings(this);
     settingsWindow->show();
     settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
+}
+
+QString MainWindow::getCilents(){
+    QString result="";
+    for(int i=0;i<tcpClient.size();i++){
+        acceptedClient=tcpClient.at(i);
+        if (acceptedClient != NULL) {
+            if (acceptedClient->isValid()) {
+                QString ip = acceptedClient->peerAddress().toString();
+                qint16 port = acceptedClient->peerPort();
+                QString temp = QString("IP：%1  端口：%2\n").arg(ip).arg(port);
+                result+=temp;
+            }
+        }
+    }
+    if(result.size()<2){
+        return "暂无连接";
+    }
+    return result;
+}
+
+QString MainWindow::getServer(){
+    if(tcpSocket->isValid()){
+        QString ip = tcpSocket->peerAddress().toString();
+        qint16 port = tcpSocket->peerPort();
+        QString temp = QString("IP：%1  端口：%2\n").arg(ip).arg(port);
+        return temp;
+    }
+    return "暂无连接";
+}
+
+void MainWindow::on_actioninfo_triggered()
+{
+    DialogClientInfo *clientInfo = new DialogClientInfo(this);
+    clientInfo->show();
+    clientInfo->setAttribute(Qt::WA_DeleteOnClose);
+}
+
+void MainWindow::on_imgButton_clicked() //发送图片
+{
+    sendFile();
 }

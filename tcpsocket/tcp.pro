@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     dialogabout.cpp \
+    dialogclientinfo.cpp \
     dialogip.cpp \
     dialogsettings.cpp \
     main.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 
 HEADERS += \
     dialogabout.h \
+    dialogclientinfo.h \
     dialogip.h \
     dialogsettings.h \
     mainwindow.h \
@@ -33,6 +35,7 @@ HEADERS += \
 
 FORMS += \
     dialogabout.ui \
+    dialogclientinfo.ui \
     dialogip.ui \
     dialogsettings.ui \
     ipaddr.ui \

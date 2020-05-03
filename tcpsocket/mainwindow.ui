@@ -368,6 +368,7 @@
      <string>工具</string>
     </property>
     <addaction name="actionGetIP"/>
+    <addaction name="actioninfo"/>
     <addaction name="actionsettings"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
@@ -387,6 +388,11 @@
   <action name="actionsettings">
    <property name="text">
     <string>设置</string>
+   </property>
+  </action>
+  <action name="actioninfo">
+   <property name="text">
+    <string>连接信息</string>
    </property>
   </action>
  </widget>

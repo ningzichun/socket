@@ -40,6 +40,8 @@ class MainWindow : public QMainWindow {
 
     void on_actioninfo_triggered();
 
+    void on_imgButton_clicked();
+    
 private:
     void readData(QTcpSocket* targetSocket,QByteArray& array);
 
