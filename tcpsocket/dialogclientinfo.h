@@ -16,6 +16,9 @@ public:
     explicit DialogClientInfo(QWidget *parent = nullptr);
     ~DialogClientInfo();
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
     Ui::DialogClientInfo *ui;
     MainWindow * p;

@@ -372,6 +372,7 @@
     <addaction name="actionsettings"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
+    <addaction name="separator"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -393,6 +394,11 @@
   <action name="actioninfo">
    <property name="text">
     <string>连接信息</string>
+   </property>
+  </action>
+  <action name="actionexit">
+   <property name="text">
+    <string>退出</string>
    </property>
   </action>
  </widget>

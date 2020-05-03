@@ -16,3 +16,8 @@ DialogClientInfo::~DialogClientInfo()
 {
     delete ui;
 }
+
+void DialogClientInfo::on_pushButton_clicked()
+{
+    close();
+}

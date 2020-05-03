@@ -14,7 +14,6 @@
 #include "dialogsettings.h"
 #include "dialogclientinfo.h"
 #include "ui_mainwindow.h"
-#include "tcpsocket.h"
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -64,14 +63,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QByteArray array = tcpSocket->readAll(); //从socket读取数据
         readData(tcpSocket,array); //调用readData函数处理数据
     });
-    connect(tcpSocket, &QTcpSocket::connected, [=]() { //成功连接到对端
-        qDebug() << "连接成功";
-        QString ip = tcpSocket->peerAddress().toString();
-        qint16 port = tcpSocket->peerPort();
-        QString temp = QString("成功连接到 %1:%2 ").arg(ip).arg(port);
-        ui->logText->moveCursor(QTextCursor::End);
-        ui->logText->insertPlainText(temp + "\n");
-    });
+
+    connect(tcpSocket, &QTcpSocket::disconnected, [=]() { //连接断开
+            ui->connectButton->setText("连接");
+            QString ip = tcpSocket->peerAddress().toString();
+            qint16 port = tcpSocket->peerPort();
+            QString temp = QString("丢失与 %1:%2 的连接").arg(ip).arg(port);
+            ui->logText->moveCursor(QTextCursor::End);
+            ui->logText->insertPlainText(temp + "\n");
+        });
 
 }
 
@@ -198,9 +198,14 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
 }
 
 
-void MainWindow::on_startButton_clicked() {
+void MainWindow::on_startButton_clicked() { //Start Listening
     if (tcpServer->isListening()) {
         tcpServer->close();
+        for(int i=0;i<tcpClient.size();i++){ //与先前连接的客户端断开连接
+            tcpClient.at(i)->disconnectFromHost();
+            tcpClient.at(i)->close();
+        }
+        tcpClient.clear();
         qDebug() << "停止连接";
         ui->startButton->setText("启动监听");
         ui->logText->moveCursor(QTextCursor::End);
@@ -238,18 +243,19 @@ void MainWindow::on_connectButton_clicked() {
     if (tcpSocket->state()>=3) {
         qDebug() << "断开连接";
         QString ip = tcpSocket->peerAddress().toString();
+        QString port=QString::number(tcpSocket->peerPort());
         tcpSocket->close();
-        ui->logText->insertPlainText("断开与 " + ip + " 的连接\n");
+        ui->logText->insertPlainText("断开与 " + ip + ":" + port+" 的连接\n");
         ui->connectButton->setText("连接");
     } else {
         QString targetIP = ui->targetIP->text();
         qint16 targetPort = ui->targetPort->text().toInt();
         //连接到服务器
-        ui->logText->insertPlainText("正在尝试连接到 " + targetIP + " \n");
+        ui->logText->insertPlainText("正在连接到 " + targetIP + ":"+QString::number(targetPort)+" \n");
         tcpSocket->connectToHost(QHostAddress(targetIP), targetPort);
         if(tcpSocket->waitForConnected(3000)){
             ui->connectButton->setText("断开");
-            ui->logText->insertPlainText("成功连接到 " + targetIP + " \n");
+            ui->logText->insertPlainText("成功连接到 " + targetIP + ":"+QString::number(targetPort)+" \n");
         }
         else{
             ui->logText->insertPlainText("连接失败\n");
@@ -265,7 +271,7 @@ void MainWindow::on_sendButton_clicked() {
     for(int i=0;i<tcpClient.size();i++){
         acceptedClient=tcpClient.at(i);
         if (acceptedClient != NULL) {
-            if (acceptedClient->isValid()) {
+            if (acceptedClient->state()>=3) {
                 QString ip = acceptedClient->peerAddress().toString();
                 QString temp = QString("正在发送数据到 %1 ").arg(ip);
                 acceptedClient->write(toSend.toUtf8().data());
@@ -273,7 +279,7 @@ void MainWindow::on_sendButton_clicked() {
             }
         }
     }
-    if (tcpSocket->isValid()) {
+    if (tcpSocket->state()>=3) {
         QString ip = tcpSocket->peerAddress().toString();
         QString temp = QString("正在发送数据到 %1 ").arg(ip);
         tcpSocket->write(toSend.toUtf8().data());
@@ -290,13 +296,13 @@ void MainWindow::on_fileButton_clicked()
     for(int i=0;i<tcpClient.size();i++){
         acceptedClient=tcpClient.at(i);
         if (acceptedClient != NULL) {
-            if (acceptedClient->isValid()) {
+            if (acceptedClient->state()>=3) {
                 sendFile(acceptedClient,path);
             }
         }
     }
 
-    if (tcpSocket->isValid()) {
+    if (tcpSocket->state()>=3) {
         sendFile(tcpSocket,path);
     }
 
@@ -347,14 +353,14 @@ void MainWindow::on_imgButton_clicked() //发送图片
     for(int i=0;i<tcpClient.size();i++){
         acceptedClient=tcpClient.at(i);
         if (acceptedClient != NULL) {
-            if (acceptedClient->isValid()) {
+            if (acceptedClient->state()>=3) {
                 sendFile(acceptedClient,path);
                 sendImgTag(acceptedClient,path);
             }
         }
     }
 
-    if (tcpSocket->isValid()) {
+    if (tcpSocket->state()>=3) {
         sendFile(tcpSocket,path);
         sendImgTag(tcpSocket,path);
     }
@@ -431,7 +437,7 @@ QString MainWindow::getCilents(){
     for(int i=0;i<tcpClient.size();i++){
         acceptedClient=tcpClient.at(i);
         if (acceptedClient != NULL) {
-            if (acceptedClient->isValid()) {
+            if (acceptedClient->state()>=3) {
                 QString ip = acceptedClient->peerAddress().toString();
                 qint16 port = acceptedClient->peerPort();
                 QString temp = QString("IP：%1  端口：%2\n").arg(ip).arg(port);
@@ -446,7 +452,7 @@ QString MainWindow::getCilents(){
 }
 
 QString MainWindow::getServer(){
-    if(tcpSocket->isValid()){
+    if(tcpSocket->state()>=3){
         QString ip = tcpSocket->peerAddress().toString();
         qint16 port = tcpSocket->peerPort();
         QString temp = QString("IP：%1  端口：%2\n").arg(ip).arg(port);
