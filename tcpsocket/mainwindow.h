@@ -40,6 +40,8 @@ class MainWindow : public QMainWindow {
 
     void on_actioninfo_triggered();
 
+    void on_imgButton_clicked();
+
 private:
     void readData(QTcpSocket* targetSocket,QByteArray& array);
 
@@ -51,6 +53,8 @@ private:
     QFile* receivingFile;
 
     void sendFile(QTcpSocket* targetSocket,QString& path);
+    void sendImgTag(QTcpSocket* targetSocket,QString& path);
+    qint64 sizeLeft=0;
     Ui::MainWindow* ui;
 };
 #endif  // MAINWINDOW_H

@@ -87,64 +87,112 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
     QDateTime current_date_time =QDateTime::currentDateTime();
     QString current_date =current_date_time.toString("yyyy.MM.dd hh:mm:ss.zzz ddd");
     qDebug()<<"readData"<<current_date;
-    qDebug()<<array.size();
 
+    while(array.size()>0){
+        qDebug()<<array.mid(0,50);
+        qDebug()<<array.size();
+        qDebug()<<sizeLeft;
 
-    if(array.size()>1){
         if(array[0]=='F'&&array[1]=='/'){ //文件头
             int current=2;
-            QByteArray filename;
+            QByteArray filename,filesize;
             while(array[current]!='/'){
                 filename+=array[current];
                 current++;
             }
+            current++;
+            while(array[current]!='/'){
+                filesize+=array[current];
+                current++;
+            }
+            current++;
+
+            sizeLeft=filesize.toLongLong();
+            qDebug()<<filesize;
+            qDebug()<<sizeLeft;
+
             QString savelocation=downloadFolder+filename;
             receivingFile=new QFile(savelocation);
+
             if(receivingFile->open(QIODevice::WriteOnly)){ //覆盖
                 ui->logText->append("接收来自 "+ip+" 的文件到 "+receivingFile->fileName()+"\n");
                 receivingFile->close();
+                array=array.mid(current); //截取子串
+                continue;
             }
             else{ //打开失败，停止传输
+                ui->logText->append("写文件失败\n");
                 delete receivingFile;
                 receivingFile=NULL;
             }
             return;
         }
         else if(array[0]=='T'&&array[1]=='/'){ //HTML
+            if(array[2]=='/'){ //图片
+                int current=3;
+                QString filename="";
+                while(array[current]!='/'){
+                    filename+=array[current];
+                    current++;
+                }
+                current++;
+                QString to_append = "<img src=\"";
+                to_append+=downloadFolder;
+                to_append+=filename;
+                to_append+="\"/>\n";
+                ui->logText->append(to_append);
+                qDebug()<<to_append;
+                array=array.mid(current);
+                ui->logText->moveCursor(QTextCursor::End);
+                return;
+            }
             ui->logText->append(temp);
             ui->logText->append(array.mid(2)+"\n");
             ui->logText->moveCursor(QTextCursor::End);
+            array="";
             if(receivingFile!=NULL){ //关闭文件
                 receivingFile->close();
                 delete receivingFile;
                 receivingFile=NULL;
             }
         }
-        else{ //文件
-            if(receivingFile->open(QIODevice::Append)){
-                receivingFile->write(array);
-                receivingFile->close();
+        else if(sizeLeft>0){ //文件
+            if(array.size()>sizeLeft){ //接收到的数据还有其他部分，这里部分接收
+                if(receivingFile->open(QIODevice::Append)){
+                    receivingFile->write(array.mid(0,sizeLeft));
+                    receivingFile->close();
+                    array=array.mid(sizeLeft);
+                    sizeLeft=0;
+                    ui->logText->append("成功接收了文件\n");
+                    continue;
+                }
+                else{ //写失败
+                    delete receivingFile;
+                    receivingFile=NULL;
+                    break;
+                }
             }
             else{
-                delete receivingFile;
-                receivingFile=NULL;
+                if(receivingFile->open(QIODevice::Append)){
+                    receivingFile->write(array);
+                    receivingFile->close();
+                    sizeLeft-=array.size();
+                    if(sizeLeft==0){
+                        ui->logText->append("成功接收了文件\n");
+                    }
+                    array="";
+                }
+                else{ //写失败
+                    delete receivingFile;
+                    receivingFile=NULL;
+                    break;
+                }
             }
         }
-    }
-    else{ //接收小于2字节的内容，似乎不会拆分成那么小
-        if(receivingFile==NULL){ //文本
-            ui->logText->append(array+"\n");
+        else{ //文本
+            ui->logText->append(array);
+            array="";
             ui->logText->moveCursor(QTextCursor::End);
-        }
-        else{ //文件
-            if(receivingFile->open(QIODevice::Append)){
-                receivingFile->write(array);
-                receivingFile->close();
-            }
-            else{
-                delete receivingFile;
-                receivingFile=NULL;
-            }
         }
     }
 }
@@ -287,11 +335,41 @@ void MainWindow::sendFile(QTcpSocket *targetSocket, QString &path){
         if(len>0) targetSocket->write(buf,len);
     }while(len>0);
 
-    QByteArray fini="E/";
-    targetSocket->write(fini);
-
     ui->logText->insertPlainText("发送完成\n");
     file.close();
+}
+
+void MainWindow::on_imgButton_clicked() //发送图片
+{
+    QString path=QFileDialog::getOpenFileName(this,"打开文件");
+    ui->selectedFile->setText("选择的图片为："+path);
+
+    for(int i=0;i<tcpClient.size();i++){
+        acceptedClient=tcpClient.at(i);
+        if (acceptedClient != NULL) {
+            if (acceptedClient->isValid()) {
+                sendFile(acceptedClient,path);
+                sendImgTag(acceptedClient,path);
+            }
+        }
+    }
+
+    if (tcpSocket->isValid()) {
+        sendFile(tcpSocket,path);
+        sendImgTag(tcpSocket,path);
+    }
+
+    ui->logText->moveCursor(QTextCursor::End);
+
+}
+
+void MainWindow::sendImgTag(QTcpSocket *targetSocket, QString &path){
+    QFileInfo fileinfo= QFileInfo(path);
+    QString filename=fileinfo.fileName();
+    QByteArray to_send="T//";
+    to_send+=filename;
+    to_send+="/";
+    targetSocket->write(to_send);
 }
 
 QString MainWindow::getHostIpAddress() { //获取一个本主机的IPv4地址
@@ -382,9 +460,4 @@ void MainWindow::on_actioninfo_triggered()
     DialogClientInfo *clientInfo = new DialogClientInfo(this);
     clientInfo->show();
     clientInfo->setAttribute(Qt::WA_DeleteOnClose);
-}
-
-void MainWindow::on_imgButton_clicked() //发送图片
-{
-    sendFile();
 }
