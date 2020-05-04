@@ -8,7 +8,7 @@
 #include <QVector>
 #include <QtNetwork>
 #include <QFileDialog>
-
+#include "pbutton.h"
 #include "dialogabout.h"
 #include "dialogip.h"
 #include "dialogsettings.h"
@@ -148,6 +148,7 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
                 to_append+=filename;
                 to_append+="\"/>\n";
                 ui->logText->append(to_append);
+                //ui->logText->append(new PBUTTON(downloadFolder+filename,'T'));
                 qDebug()<<to_append;
                 array=array.mid(current);
                 ui->logText->moveCursor(QTextCursor::End);

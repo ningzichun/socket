@@ -23,14 +23,16 @@ SOURCES += \
     dialogip.cpp \
     dialogsettings.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    pbutton.cpp
 
 HEADERS += \
     dialogabout.h \
     dialogclientinfo.h \
     dialogip.h \
     dialogsettings.h \
-    mainwindow.h
+    mainwindow.h \
+    pbutton.h
 
 FORMS += \
     dialogabout.ui \
