@@ -23,6 +23,9 @@ class MainWindow : public QMainWindow {
     QString getServer();
     QString downloadFolder;
 
+   protected:
+    virtual void keyPressEvent(QKeyEvent *ev);
+
    private slots:
     void on_actionGetIP_triggered();
 
@@ -35,6 +38,8 @@ class MainWindow : public QMainWindow {
     void on_sendButton_clicked();
 
     void on_fileButton_clicked();
+
+    void on_fileopenButton_clicked();
 
     void on_actionsettings_triggered();
 

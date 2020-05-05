@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QDebug>
+#include <QKeyEvent>
 namespace Ui {
 class PBUTTON;
 }

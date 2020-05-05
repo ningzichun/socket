@@ -344,11 +344,18 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>20</width>
           <height>20</height>
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="fileopenButton">
+        <property name="text">
+         <string>打开下载文件夹</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

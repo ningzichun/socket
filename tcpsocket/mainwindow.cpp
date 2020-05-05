@@ -14,20 +14,27 @@
 #include "dialogsettings.h"
 #include "dialogclientinfo.h"
 #include "ui_mainwindow.h"
-
+#include <QStandardPaths>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
     setFixedSize(this->width(), this->height());  // 禁止拖动窗口大小
     this->setWindowTitle("点到点通信");
-
+    this->grabKeyboard();
     tcpServer = NULL; //初始化指针
     tcpSocket = NULL;
     acceptedClient = NULL;
     receivingFile=NULL;
-    downloadFolder="";
-
+    downloadFolder=QString(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))+"/p2pdownload";
+    QString path=downloadFolder;
+    // 检查目录是否存在，若不存在则新建
+    QDir dir;
+    if (!dir.exists(path))
+    {
+        bool res = dir.mkpath(path);
+        qDebug() << "新建下载目录" << res;
+    }
 
     ui->myIP->setText(getHostIpAddress()); //显示网络接口的某一个IP
     ui->logText->insertPlainText("请开启监听或连接到其他客户端\n");
@@ -40,10 +47,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         acceptedClient = tcpServer->nextPendingConnection();
         //获取对方信息
         QString ip = acceptedClient->peerAddress().toString();
-        qint16 port = acceptedClient->peerPort();
+        quint16 port = acceptedClient->peerPort();
         QString temp = QString("接收来自 %1:%2 的入站连接").arg(ip).arg(port);
         ui->logText->insertPlainText(temp + "\n");
-
+        ui->connectButton->setText("断开");
+        ui->targetIP->setText(ip.mid(7));
+        ui->targetPort->setText(QString::number(port));
         tcpClient.append(acceptedClient); //加入到客户端列表中
 
         connect(acceptedClient, &QTcpSocket::readyRead, [=]() { //处理事件：对端有数据传来
@@ -67,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(tcpSocket, &QTcpSocket::disconnected, [=]() { //连接断开
             ui->connectButton->setText("连接");
             QString ip = tcpSocket->peerAddress().toString();
-            qint16 port = tcpSocket->peerPort();
+            quint16 port = tcpSocket->peerPort();
             QString temp = QString("断开与 %1:%2 的连接").arg(ip).arg(port);
             ui->logText->moveCursor(QTextCursor::End);
             ui->logText->insertPlainText(temp + "\n");
@@ -86,7 +95,7 @@ QString getDate(){
 
 void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数据函数，传入接收socket
     QString ip = targetSocket->peerAddress().toString(); //获取ip
-    qint16 port = targetSocket->peerPort(); //获取端口
+    quint16 port = targetSocket->peerPort(); //获取端口
     QString temp = getDate();
     temp+=QString("来自 %1:%2 的信息:").arg(ip).arg(port); //输出信息
     ui->logText->moveCursor(QTextCursor::End); //移动指针
@@ -118,7 +127,8 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
             qDebug()<<filesize;
             qDebug()<<sizeLeft;
 
-            QString savelocation=downloadFolder+filename;
+            QString savelocation=downloadFolder+'/'+filename;
+            qDebug()<<savelocation;
             receivingFile=new QFile(savelocation);
 
             if(receivingFile->open(QIODevice::WriteOnly)){ //覆盖
@@ -144,7 +154,7 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
                 }
                 current++;
                 QString to_append = "<img src=\"";
-                to_append+=downloadFolder;
+                to_append+=downloadFolder+'/';
                 to_append+=filename;
                 to_append+="\"/>\n";
                 ui->logText->append(to_append);
@@ -258,7 +268,7 @@ void MainWindow::on_connectButton_clicked() {
         ui->connectButton->setText("连接");
     } else {
         QString targetIP = ui->targetIP->text();
-        qint16 targetPort = ui->targetPort->text().toInt();
+        quint16 targetPort = ui->targetPort->text().toInt();
         //连接到服务器
         ui->logText->insertPlainText("正在连接到 " + targetIP + ":"+QString::number(targetPort)+" \n");
         qDebug()<<"连接中";
@@ -288,19 +298,32 @@ void MainWindow::on_sendButton_clicked() {
             if (acceptedClient->state()>=3) {
                 sent=1;
                 QString ip = acceptedClient->peerAddress().toString();
-                QString temp = QString("正在发送数据到 %1 ").arg(ip);
+                QString temp = getDate()+QString("我发送数据到 %1 ").arg(ip);
                 acceptedClient->write(toSend.toUtf8().data());
-                ui->logText->insertPlainText(temp + "\n");
+                ui->logText->insertPlainText(temp);
+                temp="";
+
+                ui->logText->append(ui->inputText->toHtml()+"\n");
+                ui->logText->insertPlainText(temp+='\n');
+                ui->logText->insertPlainText(temp+='\n');
+                ui->logText->moveCursor(QTextCursor::End);
             }
         }
     }
     if (tcpSocket->state()>=3) {
         sent=1;
         QString ip = tcpSocket->peerAddress().toString();
-        QString temp = QString("正在发送数据到 %1 ").arg(ip);
+        QString temp = getDate()+QString("我发送数据到 %1 ").arg(ip);
         tcpSocket->write(toSend.toUtf8().data());
-        ui->logText->insertPlainText(temp + "\n");
+        ui->logText->insertPlainText(temp);
+        temp="";
+
+        ui->logText->append(ui->inputText->toHtml()+"\n");
+        ui->logText->insertPlainText(temp+='\n');
+        ui->logText->insertPlainText(temp);
+        ui->logText->moveCursor(QTextCursor::End);
     }
+    ui->inputText->clear();
     if(sent){
         ui->selectedFile->setText("发送成功！");
     }
@@ -470,7 +493,7 @@ QString MainWindow::getCilents(){
         if (acceptedClient != NULL) {
             if (acceptedClient->state()>=3) {
                 QString ip = acceptedClient->peerAddress().toString();
-                qint16 port = acceptedClient->peerPort();
+                quint16 port = acceptedClient->peerPort();
                 QString temp = QString("IP：%1  端口：%2\n").arg(ip).arg(port);
                 result+=temp;
             }
@@ -485,7 +508,7 @@ QString MainWindow::getCilents(){
 QString MainWindow::getServer(){
     if(tcpSocket->state()>=3){
         QString ip = tcpSocket->peerAddress().toString();
-        qint16 port = tcpSocket->peerPort();
+        quint16 port = tcpSocket->peerPort();
         QString temp = QString("IP：%1  端口：%2\n").arg(ip).arg(port);
         return temp;
     }
@@ -497,4 +520,21 @@ void MainWindow::on_actioninfo_triggered()
     DialogClientInfo *clientInfo = new DialogClientInfo(this);
     clientInfo->show();
     clientInfo->setAttribute(Qt::WA_DeleteOnClose);
+}
+void MainWindow::on_fileopenButton_clicked()
+{
+    QString path=downloadFolder;
+    path.replace("/","\\");  //将地址中的"/"替换为"\"，因为在Windows下使用的是"\"。
+    QProcess::startDetached("explorer "+path);//打开上面获取的目录
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_Enter|| event->key() == Qt::Key_Return)
+    {
+       on_sendButton_clicked();
+       return;
+    }
+
+    //QWidget::keyPressEvent(event);
 }
