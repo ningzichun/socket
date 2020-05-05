@@ -18,7 +18,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
+    //setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
     setFixedSize(this->width(), this->height());  // 禁止拖动窗口大小
     this->setWindowTitle("点到点通信");
     this->grabKeyboard();
@@ -541,9 +541,13 @@ void MainWindow::on_actioninfo_triggered()
 }
 void MainWindow::on_fileopenButton_clicked()
 {
+    #ifdef Q_OS_LINUX
+    QDesktopServices::openUrl(QUrl("file:"+downloadFolder, QUrl::TolerantMode));
+    #else
     QString path=downloadFolder;
     path.replace("/","\\");  //将地址中的"/"替换为"\"，因为在Windows下使用的是"\"。
     QProcess::startDetached("explorer "+path);//打开上面获取的目录
+    #endif
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

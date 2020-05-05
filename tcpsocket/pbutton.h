@@ -38,7 +38,7 @@ class PBUTTON : public QPushButton {
             return;
         }
         #else
-            QString  cmd= QString("xdg-open ")+ filename;　　　//在linux下，可以通过system来xdg-open命令调用默认程序打开文件；
+            QString  cmd= QString("xdg-open ")+ filename;  //在linux下，可以通过system来xdg-open命令调用默认程序打开文件；
             system(cmd.toStdString().c_str());
         #endif
    }
