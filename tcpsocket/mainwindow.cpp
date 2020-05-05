@@ -65,6 +65,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 }
             }
         });
+
+
+        connect(acceptedClient, &QTcpSocket::disconnected, [=]() { //连接断开
+            for(int i=0;i<tcpClient.length();i++){ //找到触发事件的客户端
+                if(tcpClient.at(i)->state()<3){
+                    acceptedClient=tcpClient.at(i);
+                    tcpClient.removeAt(i);
+                    break;
+                }
+            }
+                ui->connectButton->setText("连接");
+                QString ip = acceptedClient->peerAddress().toString();
+                quint16 port = acceptedClient->peerPort();
+                QString temp = QString("丢失与 %1:%2 的连接").arg(ip).arg(port);
+                ui->logText->moveCursor(QTextCursor::End);
+                ui->logText->insertPlainText(temp + "\n");
+            });
     });
 
     connect(tcpSocket, &QTcpSocket::readyRead, [=]() { //对端有数据传来
@@ -81,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->logText->moveCursor(QTextCursor::End);
             ui->logText->insertPlainText(temp + "\n");
         });
+
 
 }
 
