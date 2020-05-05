@@ -18,10 +18,10 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    //setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
-    setFixedSize(this->width(), this->height());  // 禁止拖动窗口大小
+    setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
+    //setFixedSize(this->width(), this->height());  // 禁止拖动窗口大小
     this->setWindowTitle("点到点通信");
-    this->grabKeyboard();
+    //this->grabKeyboard();
     tcpServer = NULL; //初始化指针
     tcpSocket = NULL;
     acceptedClient = NULL;
@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     ui->myIP->setText(getHostIpAddress()); //显示网络接口的某一个IP
-    ui->logText->insertPlainText("请开启监听或连接到其他客户端\n");
+    ui->logText->insertHtml("按Ctrl+Enter键发送信息<br>请开启监听或连接到其他客户端<br>");
 
     tcpServer = new QTcpServer(this);
     tcpSocket = new QTcpSocket(this);
