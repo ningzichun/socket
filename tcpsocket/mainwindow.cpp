@@ -16,6 +16,7 @@
 #include "ui_mainwindow.h"
 #include <QStandardPaths>
 
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);  // 禁止最大化按钮
@@ -72,8 +73,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QString temp = QString("接收来自 %1:%2 的入站连接").arg(ip).arg(port);
         ui->logText->insertPlainText(temp + "\n");
         ui->connectButton->setText("断开");
-        ui->targetIP->setText(ip.mid(7));
-        ui->targetPort->setText(QString::number(port));
+//        ui->targetIP->setText(ip.mid(7));
+//        ui->targetPort->setText(QString::number(port));
         tcpClient.append(acceptedClient); //加入到客户端列表中
 
         connect(acceptedClient, &QTcpSocket::readyRead, [=]() { //处理事件：对端有数据传来
@@ -122,8 +123,32 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 
 }
+MainWindow::~MainWindow(){
+    if (tcpServer->isListening()) {
+        output->stop();
+        tcpServer->close();
+        for(int i=0;i<tcpClient.size();i++){ //与先前连接的客户端断开连接
+            tcpClient.at(i)->disconnectFromHost();
+        }
+        output->stop();
+        tcpClient.clear();
+        qDebug() << "停止连接";
+        ui->startButton->setText("启动监听");
+        ui->logText->moveCursor(QTextCursor::End);
+        ui->logText->insertPlainText("已停止监听\n");
+        return;
+    }
+    if (tcpSocket->state()>=3) {
+        qDebug() << "断开连接";
+        QString ip = tcpSocket->peerAddress().toString();
+        QString port=QString::number(tcpSocket->peerPort());
+        tcpSocket->close();
+        ui->connectButton->setText("连接");
+        input->stop();
+    }
+    delete ui;
+}
 
-MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::readyReadSlot(){ //接受
     while(udpServer->hasPendingDatagrams()){
@@ -285,7 +310,6 @@ void MainWindow::on_startButton_clicked() { //Start Listening
         tcpServer->close();
         for(int i=0;i<tcpClient.size();i++){ //与先前连接的客户端断开连接
             tcpClient.at(i)->disconnectFromHost();
-            tcpClient.at(i)->close();
         }
         output->stop();
         tcpClient.clear();
@@ -624,13 +648,7 @@ void MainWindow::on_actioninfo_triggered()
 }
 void MainWindow::on_fileopenButton_clicked()
 {
-    #ifdef Q_OS_LINUX
     QDesktopServices::openUrl(QUrl("file:"+downloadFolder, QUrl::TolerantMode));
-    #else
-    QString path=downloadFolder;
-    path.replace("/","\\");  //将地址中的"/"替换为"\"，因为在Windows下使用的是"\"。
-    QProcess::startDetached("explorer "+path);//打开上面获取的目录
-    #endif
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
