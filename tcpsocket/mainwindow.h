@@ -5,6 +5,12 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QFile>
+#include <QtNetwork/QUdpSocket>
+#include <QAudio>//一下这五个是QT处理音频的库
+#include <QAudioFormat>
+#include <QAudioInput>
+#include <QAudioOutput>
+#include <QIODevice>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -47,6 +53,9 @@ class MainWindow : public QMainWindow {
 
     void on_imgButton_clicked();
 
+    void onReadyRead();
+    void readyReadSlot();
+
 private:
     void readData(QTcpSocket* targetSocket,QByteArray& array);
 
@@ -56,6 +65,23 @@ private:
     QList<QTcpSocket*> tcpClient;
     int isListening = 0;
     QFile* receivingFile;
+
+    /*音频*/
+
+    QUdpSocket *udpServer;
+    QUdpSocket *udpSocket;//用于音频信号的发送
+
+    QAudioInput *input;
+    QIODevice *inputDevice;
+    QAudioOutput *output;
+    QIODevice *outputDevice;
+
+
+    struct video{
+        char data[1024];
+        int lens;
+    };
+    /*音频*/
 
     void sendFile(QTcpSocket* targetSocket,QString& path);
     void sendImgTag(QTcpSocket* targetSocket,QString& path);

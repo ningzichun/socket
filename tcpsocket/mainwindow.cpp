@@ -41,6 +41,27 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     tcpServer = new QTcpServer(this);
     tcpSocket = new QTcpSocket(this);
+    /*音频*/
+    udpServer = new QUdpSocket(this);
+    udpSocket = new QUdpSocket(this);
+
+    connect(udpServer,SIGNAL(readyRead()),this,SLOT(readyReadSlot()));
+
+//    QAudioFormat format;
+//    format.setSampleRate(8000);
+//    format.setChannelCount(1);
+//    format.setSampleSize(16);
+//    format.setCodec("audio/pcm");
+//    format.setSampleType(QAudioFormat::SignedInt);
+//    format.setByteOrder(QAudioFormat::LittleEndian);
+////    output = new QAudioOutput(format,this);
+////    outputDevice = output->start();//开始播放
+
+//    input = new QAudioInput(format,this);
+//    inputDevice = input->start();//input开始读入输入的音频信号，写入QIODevice，这里是inputDevice
+//    connect(inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
+
+    /*音频*/
 
     connect(tcpServer, &QTcpServer::newConnection, [=]() { //接受传入连接
         //取出建立好的套接字
@@ -103,6 +124,30 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 }
 
 MainWindow::~MainWindow() { delete ui; }
+
+void MainWindow::readyReadSlot(){ //接受
+    while(udpServer->hasPendingDatagrams()){
+        QHostAddress senderip;
+        quint16 senderport;
+        qDebug()<<"audio is being received..."<<endl;
+        video vp;
+        memset(&vp,0,sizeof(vp));
+        udpServer->readDatagram((char*)&vp,sizeof(vp),&senderip,&senderport);
+        outputDevice->write(vp.data,vp.lens);
+    }
+}
+void MainWindow::onReadyRead() { //发送
+    qDebug()<<"It's sending audio!"<<endl;
+    video vp;
+    memset(&vp,0,sizeof(vp));
+
+
+    //读取音频
+     vp.lens = inputDevice->read(vp.data,1024);//读取音频
+     QHostAddress destaddr;
+     destaddr.setAddress("192.168.15.228");
+     udpSocket->writeDatagram((const char*)&vp,sizeof(vp),udpSocket->peerAddress(),udpSocket->peerPort());
+}
 
 QString getDate(){
     QDateTime current_date_time =QDateTime::currentDateTime();
@@ -236,11 +281,13 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
 
 void MainWindow::on_startButton_clicked() { //Start Listening
     if (tcpServer->isListening()) {
+        output->stop();
         tcpServer->close();
         for(int i=0;i<tcpClient.size();i++){ //与先前连接的客户端断开连接
             tcpClient.at(i)->disconnectFromHost();
             tcpClient.at(i)->close();
         }
+        output->stop();
         tcpClient.clear();
         qDebug() << "停止连接";
         ui->startButton->setText("启动监听");
@@ -259,12 +306,31 @@ void MainWindow::on_startButton_clicked() { //Start Listening
         qDebug() << "监听成功";
         ui->startButton->setText("停止监听");
     } else {
+        output->stop();
         qDebug() << "监听失败";
         ui->logText->insertPlainText("监听失败\n");
         QMessageBox::information(NULL, "提示", "监听失败，请检查设置");
         return;
     }
+    /**/
+    quint16 voicePort = ui->listenVoice->text().toInt();
+    udpServer->bind(QHostAddress::Any,voicePort);
+    QAudioFormat format;
+    format.setSampleRate(8000);
+    format.setChannelCount(1);
+    format.setSampleSize(16);
+    format.setCodec("audio/pcm");
+    format.setSampleType(QAudioFormat::SignedInt);
+    format.setByteOrder(QAudioFormat::LittleEndian);
+    output = new QAudioOutput(format,this);
+    outputDevice = output->start();//开始播放
+    qDebug() << "开始播放";
+    /**/
+
+
+
     ui->logText->insertPlainText("已启动监听，端口号" + ui->listeningPort->text() + "\n");
+    ui->logText->insertPlainText("已启动监听，音频端口号" + ui->listenVoice->text() + "\n");
 
     ui->logText->moveCursor(QTextCursor::End);
 }
@@ -277,30 +343,47 @@ void MainWindow::on_connectButton_clicked() {
         return;
     }
     ui->logText->moveCursor(QTextCursor::End);
-
     if (tcpSocket->state()>=3) {
         qDebug() << "断开连接";
         QString ip = tcpSocket->peerAddress().toString();
         QString port=QString::number(tcpSocket->peerPort());
         tcpSocket->close();
         ui->connectButton->setText("连接");
+        input->stop();
     } else {
         QString targetIP = ui->targetIP->text();
         quint16 targetPort = ui->targetPort->text().toInt();
+        quint16 voicePort = ui->targetVoice->text().toInt();
         //连接到服务器
         ui->logText->insertPlainText("正在连接到 " + targetIP + ":"+QString::number(targetPort)+" \n");
         qDebug()<<"连接中";
         ui->logText->moveCursor(QTextCursor::End);
         tcpSocket->connectToHost(QHostAddress(targetIP), targetPort);
+        /*音频*/
+        udpSocket->connectToHost(QHostAddress(targetIP), voicePort);
+        QAudioFormat format;
+        format.setSampleRate(8000);
+        format.setChannelCount(1);
+        format.setSampleSize(16);
+        format.setCodec("audio/pcm");
+        format.setSampleType(QAudioFormat::SignedInt);
+        format.setByteOrder(QAudioFormat::LittleEndian);
+        input = new QAudioInput(format,this);
+        inputDevice = input->start();//input开始读入输入的音频信号，写入QIODevice，这里是inputDevice
+        connect(inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
+        qDebug() << "开始音频输入";
+
+        /*音频*/
         if(tcpSocket->waitForConnected(3000)){
             ui->connectButton->setText("断开");
             ui->logText->insertPlainText("成功连接到 " + targetIP + ":"+QString::number(targetPort)+" \n");
+            ui->logText->insertPlainText("成功连接到 " + targetIP + ":"+QString::number(voicePort)+"（音频端口）\n");
         }
         else{
+            input->stop();
             ui->logText->insertPlainText("连接失败\n");
         }
     }
-
     ui->logText->moveCursor(QTextCursor::End);
 }
 
