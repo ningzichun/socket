@@ -228,7 +228,8 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
             qDebug()<<sizeLeft;
 
             savelocation=downloadFolder+'/'+filename;
-            //if(NowMode==1) savelocation=downloadFolder+"/tmp/"+filename;
+            if(filename[0]=='p'&&filename[1]=='s'&&filename[2]=='c'&&filename[3]=='r')
+                savelocation=downloadFolder+"/tmp/"+filename;
             qDebug()<<savelocation;
             receivingFile=new QFile(savelocation);
 
@@ -253,7 +254,8 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
                 filename+=array[current];
                 current++;
             }
-
+            current++;
+            array=array.mid(current);
             ui->logText->append("收到实时手绘，请打开画图接收器查看。\n");
             ui->logText->moveCursor(QTextCursor::End);
 
@@ -262,7 +264,7 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
                 delete receivingFile;
                 receivingFile=NULL;
             }
-            pform->showpic(savelocation);
+            pform->showpic(downloadFolder+"/tmp/"+filename);
         }
         else if(array[0]=='T'&&array[1]=='/'){ //HTML
             if(array[2]=='/'){ //图片

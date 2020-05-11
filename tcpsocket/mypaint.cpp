@@ -60,7 +60,7 @@ void MyPaint::solveslot()  //截屏
 {
     QScreen *screen=QGuiApplication::primaryScreen();
     QPixmap p=screen->grabWindow(this->winId());
-    QString filename = PaintFolder+'/';
+    QString filename = PaintFolder+"/pscr";
     filename+=QString ::number(QDateTime::currentMSecsSinceEpoch()); //毫秒
     filename += ".png";
     qDebug()<<filename;
@@ -80,7 +80,7 @@ void MyPaint::start()
     this->show();
 
     connect(timer, &QTimer::timeout, this, &MyPaint::solveslot);
-    timer->start(5000);
+    timer->start(1000);
 
 }
 void MyPaint::paintEvent(QPaintEvent *)

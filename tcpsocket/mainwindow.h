@@ -35,8 +35,8 @@ class MainWindow : public QMainWindow {
    protected:
     virtual void keyPressEvent(QKeyEvent *ev);
 signals:
-    void closepaint(bool);
-    void transportpaint(QString);
+    //void closepaint(bool);
+    //void transportpaint(QString);
    private slots:
     void on_actionGetIP_triggered();
 
@@ -64,7 +64,7 @@ signals:
 
     /*画图*/
     void changemode();
-    void sendPic();
+
     void changepaintpic(QString);
 
     void on_paintsendButton_clicked();
@@ -105,6 +105,6 @@ private:
 
     /*画图*/
     QString paintpath;
-
+    void sendPic();
 };
 #endif  // MAINWINDOW_H

@@ -20,5 +20,5 @@ void Pform::showpic(QString path)
     QPalette bgPalette = this->palette();
     bgPalette.setBrush(QPalette::Background,bgImage);
     this->setPalette(bgPalette);
-    qDebug()<<"收到画图图片啦";
+    qDebug()<<"收到画图图片啦"+path+"为路径"+"\n";
 }
