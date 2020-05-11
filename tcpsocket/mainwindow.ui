@@ -438,6 +438,13 @@
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>截屏</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="fileopenButton">
         <property name="text">
          <string>打开下载文件夹</string>

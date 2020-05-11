@@ -71,6 +71,8 @@ signals:
 
     void on_paintreceiveButton_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     void readData(QTcpSocket* targetSocket,QByteArray& array);
 

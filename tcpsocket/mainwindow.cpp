@@ -740,3 +740,35 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
     //QWidget::keyPressEvent(event);
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QString path = downloadFolder;
+    path+="/";
+    path+="screen-";
+    path += QDateTime::currentDateTime().toString("yyyy-MM-dd hh-mm-ss-zzz");
+    path += ".jpg";
+    if(!screen->grabWindow(0).save(path, "jpg"))
+    {
+        qDebug()<<"save full screen failed"<<endl;
+        return;
+    }
+    for(int i=0;i<tcpClient.size();i++){
+        acceptedClient=tcpClient.at(i);
+        if (acceptedClient != NULL) {
+            if (acceptedClient->state()>=3) {
+                sendFile(acceptedClient,path);
+                sendImgTag(acceptedClient,path);
+            }
+        }
+    }
+
+    if (tcpSocket->state()>=3) {
+        sendFile(tcpSocket,path);
+        sendImgTag(tcpSocket,path);
+    }
+    ui->logText->moveCursor(QTextCursor::End);
+
+
+}
