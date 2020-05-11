@@ -26,7 +26,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     tcpServer = NULL; //初始化指针
     tcpSocket = NULL;
     acceptedClient = NULL;
-    receivingFile=NULL;
+    receivingFile = NULL;
+    mypaint = new MyPaint;
+    pform = new Pform;
     downloadFolder=QString(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))+"/p2pdownload";
     QString path=downloadFolder;
     // 检查目录是否存在，若不存在则新建
@@ -35,6 +37,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     {
         bool res = dir.mkpath(path);
         qDebug() << "新建下载目录" << res;
+    }
+    /*画图图片临时目录*/
+    path=downloadFolder+"/tmp";
+    if (!dir.exists(path))
+    {
+        bool res = dir.mkpath(path);
+        qDebug() << "新建临时目录" << res;
     }
 
     ui->myIP->setText(getHostIpAddress()); //显示网络接口的某一个IP
@@ -48,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(udpServer,SIGNAL(readyRead()),this,SLOT(readyReadSlot()));
 
+    /*画图*/
+    connect(mypaint,SIGNAL(closepaint(bool)),this,SLOT(changemode()));
+    connect(mypaint,SIGNAL(transportpaint(QString)),this,SLOT(changepaintpic(QString)));
 //    QAudioFormat format;
 //    format.setSampleRate(8000);
 //    format.setChannelCount(1);
@@ -191,7 +203,7 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
     QDateTime current_date_time =QDateTime::currentDateTime();
     QString current_date =current_date_time.toString("yyyy.MM.dd hh:mm:ss.zzz ddd");
     qDebug()<<"readData"<<current_date;
-
+    QString savelocation;
     while(array.size()>0){
         qDebug()<<array.mid(0,50);
         qDebug()<<array.size();
@@ -215,7 +227,8 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
             qDebug()<<filesize;
             qDebug()<<sizeLeft;
 
-            QString savelocation=downloadFolder+'/'+filename;
+            savelocation=downloadFolder+'/'+filename;
+            //if(NowMode==1) savelocation=downloadFolder+"/tmp/"+filename;
             qDebug()<<savelocation;
             receivingFile=new QFile(savelocation);
 
@@ -231,6 +244,25 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
                 receivingFile=NULL;
             }
             return;
+        }
+        else if(array[0]=='P'&&array[1]=='/')
+        {
+            int current=2;
+            QString filename="";
+            while(array[current]!='/'){
+                filename+=array[current];
+                current++;
+            }
+
+            ui->logText->append("收到实时手绘，请打开画图接收器查看。\n");
+            ui->logText->moveCursor(QTextCursor::End);
+
+            if(receivingFile!=NULL){ //关闭文件
+                receivingFile->close();
+                delete receivingFile;
+                receivingFile=NULL;
+            }
+            pform->showpic(savelocation);
         }
         else if(array[0]=='T'&&array[1]=='/'){ //HTML
             if(array[2]=='/'){ //图片
@@ -287,6 +319,7 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
                         ui->logText->append("成功接收了文件\n");
                     }
                     array="";
+
                 }
                 else{ //写失败
                     delete receivingFile;
@@ -526,8 +559,31 @@ void MainWindow::sendFile(QTcpSocket *targetSocket, QString &path){
 
 void MainWindow::on_imgButton_clicked() //发送图片
 {
-    QString path=QFileDialog::getOpenFileName(this,"打开文件");
+    QString path;
+    path=QFileDialog::getOpenFileName(this,"打开文件");
     ui->selectedFile->setText("选择的图片为："+path);
+    for(int i=0;i<tcpClient.size();i++){
+        acceptedClient=tcpClient.at(i);
+        if (acceptedClient != NULL) {
+            if (acceptedClient->state()>=3) {
+                sendFile(acceptedClient,path);
+                sendImgTag(acceptedClient,path);
+            }
+        }
+    }
+
+    if (tcpSocket->state()>=3) {
+        sendFile(tcpSocket,path);
+        sendImgTag(tcpSocket,path);
+    }
+    ui->logText->moveCursor(QTextCursor::End);
+
+}
+void MainWindow::sendPic() //发送图片
+{
+    QString path;
+    path=paintpath;
+    qDebug()<<paintpath;
 
     for(int i=0;i<tcpClient.size();i++){
         acceptedClient=tcpClient.at(i);
@@ -543,15 +599,14 @@ void MainWindow::on_imgButton_clicked() //发送图片
         sendFile(tcpSocket,path);
         sendImgTag(tcpSocket,path);
     }
-
     ui->logText->moveCursor(QTextCursor::End);
 
 }
-
 void MainWindow::sendImgTag(QTcpSocket *targetSocket, QString &path){
     QFileInfo fileinfo= QFileInfo(path);
     QString filename=fileinfo.fileName();
     QByteArray to_send="T//";
+    if(NowMode==1) to_send="P/";
     to_send+=filename;
     to_send+="/";
     targetSocket->write(to_send);
@@ -649,6 +704,28 @@ void MainWindow::on_actioninfo_triggered()
 void MainWindow::on_fileopenButton_clicked()
 {
     QDesktopServices::openUrl(QUrl("file:"+downloadFolder, QUrl::TolerantMode));
+}
+void MainWindow::on_paintsendButton_clicked()
+{
+    mypaint->start();
+    NowMode=1;
+    //qDebug()<<NowMode<<"\n";
+}
+void MainWindow::changemode()
+{
+    NowMode=0;
+    //qDebug()<<NowMode<<"\n";
+}
+
+void MainWindow::changepaintpic(QString msg)
+{
+    paintpath=msg;
+    sendPic();
+    qDebug()<<"发送画图图片"<<"\n";
+}
+void MainWindow::on_paintreceiveButton_clicked()
+{
+    pform->show();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

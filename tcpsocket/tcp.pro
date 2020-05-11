@@ -25,7 +25,9 @@ SOURCES += \
     dialogsettings.cpp \
     main.cpp \
     mainwindow.cpp \
-    pbutton.cpp
+    mypaint.cpp \
+    pbutton.cpp \
+    pform.cpp
 
 HEADERS += \
     dialogabout.h \
@@ -33,7 +35,9 @@ HEADERS += \
     dialogip.h \
     dialogsettings.h \
     mainwindow.h \
-    pbutton.h
+    mypaint.h \
+    pbutton.h \
+    pform.h
 
 FORMS += \
     dialogabout.ui \
@@ -41,7 +45,9 @@ FORMS += \
     dialogip.ui \
     dialogsettings.ui \
     ipaddr.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    mypaint.ui \
+    pform.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

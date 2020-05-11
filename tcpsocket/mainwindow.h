@@ -11,7 +11,8 @@
 #include <QAudioInput>
 #include <QAudioOutput>
 #include <QIODevice>
-
+#include <mypaint.h>
+#include <pform.h>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -28,10 +29,14 @@ class MainWindow : public QMainWindow {
     QString getCilents();
     QString getServer();
     QString downloadFolder;
-
+    MyPaint *mypaint;
+    Pform *pform;
+    qint64 NowMode;  // 图片模式：选择的文件为0 ，画图截图 1
    protected:
     virtual void keyPressEvent(QKeyEvent *ev);
-
+signals:
+    void closepaint(bool);
+    void transportpaint(QString);
    private slots:
     void on_actionGetIP_triggered();
 
@@ -53,8 +58,18 @@ class MainWindow : public QMainWindow {
 
     void on_imgButton_clicked();
 
+
     void onReadyRead();
     void readyReadSlot();
+
+    /*画图*/
+    void changemode();
+    void sendPic();
+    void changepaintpic(QString);
+
+    void on_paintsendButton_clicked();
+
+    void on_paintreceiveButton_clicked();
 
 private:
     void readData(QTcpSocket* targetSocket,QByteArray& array);
@@ -87,5 +102,9 @@ private:
     void sendImgTag(QTcpSocket* targetSocket,QString& path);
     qint64 sizeLeft=0;
     Ui::MainWindow* ui;
+
+    /*画图*/
+    QString paintpath;
+
 };
 #endif  // MAINWINDOW_H

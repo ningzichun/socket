@@ -2,4 +2,13 @@
     <qresource prefix="/">
         <file>res/zhuzi.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>res/1.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>res/lines.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>res/texts.png</file>
+    </qresource>
 </RCC>
