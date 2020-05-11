@@ -23,7 +23,7 @@ MyPaint::MyPaint(QWidget *parent) :
      _begin = pos();//拖拽的参考坐标，方便计算位移
      _tEdit = new QTextEdit(this);//初始化文本输入框
      _tEdit->hide();//隐藏
-     this->setGeometry(350,200,600,400);//设置窗体大小、位置
+     this->setGeometry(350,100,1200,800);//设置窗体大小、位置
      setMouseTracking(true);//开启鼠标实时追踪，监听鼠标移动事件，默认只有按下时才监听
      //设置背景黑色
      //方法一

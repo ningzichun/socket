@@ -256,7 +256,7 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
             }
             current++;
             array=array.mid(current);
-            ui->logText->append("收到实时手绘，请打开画图接收器查看。\n");
+            ui->logText->append("收到实时手绘，请打开手绘接收器查看。\n");
             ui->logText->moveCursor(QTextCursor::End);
 
             if(receivingFile!=NULL){ //关闭文件

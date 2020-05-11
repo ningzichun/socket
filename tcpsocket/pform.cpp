@@ -6,7 +6,7 @@ Pform::Pform(QWidget *parent) :
     ui(new Ui::Pform)
 {
     ui->setupUi(this);
-    this->setGeometry(350,100,600,400);
+    this->setGeometry(350,100,1200,800);
 }
 
 Pform::~Pform()
