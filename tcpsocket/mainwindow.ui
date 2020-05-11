@@ -358,14 +358,14 @@
       <item>
        <widget class="QPushButton" name="paintsendButton">
         <property name="text">
-         <string>画板</string>
+         <string>实时手绘</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="paintreceiveButton">
         <property name="text">
-         <string>画图接收器</string>
+         <string>手绘接收器</string>
         </property>
        </widget>
       </item>
@@ -374,9 +374,12 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>20</width>
           <height>20</height>
          </size>
         </property>

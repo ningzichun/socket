@@ -7,6 +7,7 @@ Pform::Pform(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setGeometry(350,100,1200,800);
+    this->setWindowTitle("手绘接收窗口");
 }
 
 Pform::~Pform()

@@ -6,7 +6,9 @@ MyPaint::MyPaint(QWidget *parent) :
     QMainWindow(parent)
 {
     this->setWindowIcon(QIcon(":/res/1.png"));
+    this->setWindowTitle("实时手绘");
      timer= new QTimer(this);
+     startTime=QString ::number(QDateTime::currentMSecsSinceEpoch());
      PaintFolder=QString(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))+"/tmppaint";
      QString path=PaintFolder;
      // 检查目录是否存在，若不存在则新建
@@ -61,7 +63,7 @@ void MyPaint::solveslot()  //截屏
     QScreen *screen=QGuiApplication::primaryScreen();
     QPixmap p=screen->grabWindow(this->winId());
     QString filename = PaintFolder+"/pscr";
-    filename+=QString ::number(QDateTime::currentMSecsSinceEpoch()); //毫秒
+    filename+=startTime; //毫秒
     filename += ".png";
     qDebug()<<filename;
     if(!p.save(filename,"png"))
@@ -80,7 +82,7 @@ void MyPaint::start()
     this->show();
 
     connect(timer, &QTimer::timeout, this, &MyPaint::solveslot);
-    timer->start(1000);
+    timer->start(100);
 
 }
 void MyPaint::paintEvent(QPaintEvent *)
@@ -199,8 +201,10 @@ void MyPaint::keyPressEvent(QKeyEvent *e) //按键事件
      //Ctrl+Z撤销
      if (e->key() == Qt::Key_Z && e->modifiers() == Qt::ControlModifier)
      {
+         qDebug()<<"here";
          if(_shape.size()>0)
          {
+             qDebug()<<"here2";
              _lines.pop_back();
              _shape.pop_back();
              _drag = 0;//设置为非拖拽模式
