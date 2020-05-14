@@ -356,12 +356,13 @@ void MainWindow::readData(QTcpSocket* targetSocket,QByteArray& array){ //读数�
 
 void MainWindow::on_startButton_clicked() { //Start Listening
     if (tcpServer->isListening()) {
-        output->stop();
+        qDebug() << "停止连接0";
+        //output->stop();
+        udpServer->close();
         tcpServer->close();
         for(int i=0;i<tcpClient.size();i++){ //与先前连接的客户端断开连接
             tcpClient.at(i)->disconnectFromHost();
         }
-        output->stop();
         tcpClient.clear();
         qDebug() << "停止连接";
         ui->startButton->setText("启动监听");
