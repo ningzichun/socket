@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>769</width>
+    <width>765</width>
     <height>702</height>
    </rect>
   </property>
@@ -266,7 +266,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>16</width>
+           <width>17</width>
            <height>24</height>
           </size>
          </property>
@@ -294,7 +294,7 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="7">
+       <item row="0" column="7">
         <spacer name="horizontalSpacer_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -386,7 +386,7 @@
        </font>
       </property>
       <property name="text">
-       <string>选择的文件</string>
+       <string>选择的文件:</string>
       </property>
      </widget>
     </item>
@@ -524,7 +524,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>769</width>
+     <width>765</width>
      <height>22</height>
     </rect>
    </property>
