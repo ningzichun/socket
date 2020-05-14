@@ -27,8 +27,8 @@
         </property>
         <property name="font">
          <font>
-          <family>宋体</family>
-          <pointsize>16</pointsize>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -49,16 +49,35 @@
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label_2">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>文件保存路径</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="savePath"/>
+       <widget class="QLineEdit" name="savePath">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="choosePathButton">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>选择</string>
         </property>
@@ -69,6 +88,12 @@
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

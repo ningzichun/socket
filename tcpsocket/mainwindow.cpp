@@ -8,6 +8,7 @@
 #include <QVector>
 #include <QtNetwork>
 #include <QFileDialog>
+#include <QPalette>
 #include "pbutton.h"
 #include "dialogabout.h"
 #include "dialogip.h"
@@ -23,6 +24,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //setFixedSize(this->width(), this->height());  // 禁止拖动窗口大小
     this->setWindowTitle("点到点通信");
     //this->grabKeyboard();
+
+    /*UI*/
+    QPalette bgpal = palette();
+    bgpal.setColor (QPalette::Background, QColor (212, 234, 248, 255));
+//    bgpal.setColor (QPalette::Background, Qt::transparent);
+//    bgpal.setColor (QPalette::Foreground, QColor (255,255,255,255));
+        setPalette (bgpal);
+//      setStyleSheet("QPushButton{color:black}");
+      setStyleSheet ("border:3px groove white;border-radius:8px;padding:2px 4px;");
+
+//    QPalette pal = palette();
+//    pal.setColor(QPalette::Background, QColor(0x00,0xff,0x00,0x00));
+//    setPalette(pal);
+    /*UI*/
     tcpServer = NULL; //初始化指针
     tcpSocket = NULL;
     acceptedClient = NULL;

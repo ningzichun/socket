@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>806</width>
-    <height>622</height>
+    <width>769</width>
+    <height>702</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,63 +18,6 @@
     <item>
      <widget class="QWidget" name="widget" native="true">
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="4">
-        <widget class="QLineEdit" name="targetPort">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>120</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Consolas</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>23456</string>
-         </property>
-         <property name="maxLength">
-          <number>5</number>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="8">
-        <widget class="QPushButton" name="connectButton">
-         <property name="font">
-          <font>
-           <family>Consolas</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>连接</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="8">
-        <widget class="QPushButton" name="startButton">
-         <property name="font">
-          <font>
-           <family>Consolas</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>启动监听</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="1">
         <widget class="QLabel" name="myIP">
          <property name="sizePolicy">
@@ -128,8 +71,8 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="3">
-        <widget class="QLabel" name="label_5">
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_4">
          <property name="font">
           <font>
            <family>Consolas</family>
@@ -141,8 +84,8 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="label_4">
+       <item row="0" column="8">
+        <widget class="QPushButton" name="connectButton">
          <property name="font">
           <font>
            <family>Consolas</family>
@@ -150,7 +93,20 @@
           </font>
          </property>
          <property name="text">
-          <string>端口:</string>
+          <string>连接</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QLabel" name="label_7">
+         <property name="font">
+          <font>
+           <family>Consolas</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>音频端口：</string>
          </property>
         </widget>
        </item>
@@ -167,8 +123,8 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="targetIP">
+       <item row="1" column="3">
+        <widget class="QLabel" name="label_5">
          <property name="font">
           <font>
            <family>Consolas</family>
@@ -176,10 +132,7 @@
           </font>
          </property>
          <property name="text">
-          <string>127.0.0.1</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <string>端口:</string>
          </property>
         </widget>
        </item>
@@ -211,8 +164,8 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
-        <widget class="QLabel" name="label_7">
+       <item row="1" column="8">
+        <widget class="QPushButton" name="startButton">
          <property name="font">
           <font>
            <family>Consolas</family>
@@ -220,25 +173,18 @@
           </font>
          </property>
          <property name="text">
-          <string>音频端口：</string>
+          <string>启动监听</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="0" column="4">
+        <widget class="QLineEdit" name="targetPort">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="6">
-        <widget class="QLineEdit" name="targetVoice">
          <property name="maximumSize">
           <size>
            <width>120</width>
@@ -252,28 +198,34 @@
           </font>
          </property>
          <property name="text">
-          <string>33356</string>
+          <string>23456</string>
+         </property>
+         <property name="maxLength">
+          <number>5</number>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
-       <item row="1" column="7">
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="targetIP">
+         <property name="font">
+          <font>
+           <family>Consolas</family>
+           <pointsize>12</pointsize>
+          </font>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
+         <property name="text">
+          <string>127.0.0.1</string>
          </property>
-        </spacer>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
        </item>
-       <item row="1" column="6">
-        <widget class="QLineEdit" name="listenVoice">
+       <item row="0" column="6">
+        <widget class="QLineEdit" name="targetVoice">
          <property name="maximumSize">
           <size>
            <width>120</width>
@@ -307,6 +259,54 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>16</width>
+           <height>24</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="6">
+        <widget class="QLineEdit" name="listenVoice">
+         <property name="maximumSize">
+          <size>
+           <width>120</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Consolas</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>33356</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="7">
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>16</width>
+           <height>24</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
     </item>
@@ -325,6 +325,12 @@
     </item>
     <item>
      <widget class="QTextEdit" name="logText">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="readOnly">
        <bool>true</bool>
       </property>
@@ -344,10 +350,29 @@
      </widget>
     </item>
     <item>
-     <widget class="QTextEdit" name="inputText"/>
+     <widget class="QTextEdit" name="inputText">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>100</height>
+       </size>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="selectedFile">
+      <property name="font">
+       <font>
+        <family>Consolas</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>选择的文件</string>
       </property>
@@ -357,6 +382,12 @@
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QPushButton" name="paintsendButton">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>实时手绘</string>
         </property>
@@ -364,6 +395,15 @@
       </item>
       <item>
        <widget class="QPushButton" name="paintreceiveButton">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="text">
          <string>手绘接收器</string>
         </property>
@@ -375,7 +415,7 @@
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
+         <enum>QSizePolicy::Expanding</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -439,6 +479,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>截屏</string>
         </property>
@@ -446,6 +492,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="fileopenButton">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>打开下载文件夹</string>
         </property>
@@ -460,8 +512,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>806</width>
-     <height>26</height>
+     <width>769</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

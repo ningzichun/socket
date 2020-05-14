@@ -22,6 +22,12 @@
      <height>191</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Consolas</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
   </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
@@ -44,6 +50,12 @@
      <width>93</width>
      <height>28</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Consolas</family>
+     <pointsize>12</pointsize>
+    </font>
    </property>
    <property name="text">
     <string>完成</string>

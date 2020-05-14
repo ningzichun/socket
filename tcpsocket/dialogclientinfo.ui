@@ -29,13 +29,26 @@
    </item>
    <item>
     <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>有效的客户端：</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QTextBrowser" name="text1"/>
+    <widget class="QTextBrowser" name="text1">
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer_2">
@@ -58,7 +71,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="text2"/>
+    <widget class="QLineEdit" name="text2">
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
@@ -78,6 +98,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>关闭</string>
         </property>

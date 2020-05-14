@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>417</width>
-    <height>344</height>
+    <width>548</width>
+    <height>483</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,6 +25,12 @@
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QLabel" name="label">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>本机IP地址列表：</string>
         </property>
@@ -34,7 +40,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="IPtext"/>
+    <widget class="QTextEdit" name="IPtext">
+     <property name="font">
+      <font>
+       <family>Consolas</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
@@ -54,6 +67,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="exitButton">
+        <property name="font">
+         <font>
+          <family>Consolas</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>完成</string>
         </property>
