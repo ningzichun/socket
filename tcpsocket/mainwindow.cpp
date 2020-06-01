@@ -16,6 +16,8 @@
 #include "dialogclientinfo.h"
 #include "ui_mainwindow.h"
 #include <QStandardPaths>
+#include <QCoreApplication>
+#include <QTime>
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -570,6 +572,11 @@ void MainWindow::sendFile(QTcpSocket *targetSocket, QString &path){//发送文�
     do{
         len=file.read(buf,sizeof(buf));//从文件中读取部分数据到内存中
         if(len>0) targetSocket->write(buf,len);//将读取到的部分写入到Socket中发送
+        // 这里就可以慢慢传了，不会导致数据快速写入淹没socket（网速不匹配）
+//        QTime t;
+//        t.start();
+//        while (t.elapsed() < 100) QCoreApplication::processEvents();
+
     }while(len>0);
 
     ui->logText->insertPlainText("发送完成\n");
